@@ -43,6 +43,7 @@ defmodule Relax.Serializer do
       @attributes []
       @relations  []
       @key        nil
+      @location   nil
 
       import Relax.Serializer,          only: [serialize: 2]
       import Relax.Serializer.Location, only: [path: 1]
@@ -57,7 +58,7 @@ defmodule Relax.Serializer do
   defmacro serialize(key, do: block) do
     quote do
       import Relax.Serializer, only: [
-        attributes: 1, has_many: 2, belongs_to: 2
+        attributes: 1, has_many: 2, has_many: 1, has_one: 2, has_one: 1
       ]
 
       @key unquote(key)
@@ -95,7 +96,7 @@ defmodule Relax.Serializer do
   * link - Represent this resource as a link to another resource.
 
   """
-  defmacro has_many(name, opts) do
+  defmacro has_many(name, opts \\ []) do
     quote bind_quoted: [name: name, opts: opts] do
       @relations [{:has_many, name, opts} | @relations]
       # Define default relation function, make overridable
@@ -106,10 +107,10 @@ defmodule Relax.Serializer do
     end
   end
 
-  defmacro belongs_to(name, opts) do
+  defmacro has_one(name, opts \\ []) do
     #TODO: Dry up setting up relationships.
     quote bind_quoted: [name: name, opts: opts] do
-      @relations [{:belongs_to, name, opts} | @relations]
+      @relations [{:has_one, name, opts} | @relations]
       # Define default relation function, make overridable
       def unquote(name)(model, _conn) do
         Map.get(model, (unquote(opts)[:field] || unquote(name)))

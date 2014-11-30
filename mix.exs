@@ -12,7 +12,7 @@ defmodule Relax.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :faker]]
   end
 
   # Dependencies can be Hex packages:
@@ -25,6 +25,9 @@ defmodule Relax.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [{:cowboy, "~> 1.0"},
+     {:plug,   "~> 0.8"},
+     {:inflex, "~> 0.2.5"},
+     {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test}]
   end
 end
