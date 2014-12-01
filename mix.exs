@@ -12,8 +12,11 @@ defmodule Relax.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :faker]]
+    [applications: applications(Mix.env)]
   end
+
+  defp applications(:test), do: applications(:all) ++ [:blacksmith]
+  defp applications(_all),  do: [:logger]
 
   # Dependencies can be Hex packages:
   #

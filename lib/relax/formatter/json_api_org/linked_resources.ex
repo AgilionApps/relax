@@ -60,7 +60,8 @@ defmodule Relax.Formatter.JsonApiOrg.LinkedResources do
   defp group_and_format(resources, conn) do
     Enum.reduce resources, %{}, fn(r, results) ->
       formatted = Format.format_resource(r.serializer, r.resource, conn)
-      Map.update(results, r.key, [formatted], &[formatted | &1])
+      key = r.key |> Atom.to_string |> Inflex.pluralize
+      Map.update(results, key, [formatted], &[formatted | &1])
     end
   end
 
