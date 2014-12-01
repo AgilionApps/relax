@@ -131,8 +131,8 @@ defmodule Relax.Serializer do
         Relax.Formatter.JsonApiOrg.format(model, __MODULE__, conn, meta)
       end
 
-      def location(model) do
-        Relax.Serializer.Location.generate(model, __location)
+      def location(model, conn) do
+        Relax.Serializer.Location.generate(model, __MODULE__, conn, __location)
       end
     end
   end

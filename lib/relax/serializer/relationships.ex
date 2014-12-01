@@ -8,7 +8,7 @@ defmodule Relax.Serializer.Relationships do
 
   defp nested_relation(serializer, model, conn, {type, name, opts}) do
     if opts[:link] do
-      %{href: Relax.Serializer.Location.generate(model, opts[:link])}
+      %{href: Relax.Serializer.Location.generate(model, serializer, conn, opts[:link])}
     else
       nested_ids(serializer, model, conn, {type, name, opts})
     end
