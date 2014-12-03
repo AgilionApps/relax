@@ -73,8 +73,9 @@ defmodule Relax.Serializer do
 
       # Define default attribute function, make overridable
       for att <- atts do
-        def unquote(att)(model, _conn), do: Map.get(model, unquote(att))
-        defoverridable [{att, 2}]
+        def unquote(att)(m),    do: Map.get(m, unquote(att))
+        def unquote(att)(m, c), do: apply(__MODULE__, unquote(att), [m])
+        defoverridable [{att, 2}, {att, 1}]
       end
     end
   end
@@ -100,10 +101,11 @@ defmodule Relax.Serializer do
     quote bind_quoted: [name: name, opts: opts] do
       @relations [{:has_many, name, opts} | @relations]
       # Define default relation function, make overridable
-      def unquote(name)(model, _conn) do
+      def unquote(name)(m, c), do: apply(__MODULE__, unquote(name), [m])
+      def unquote(name)(model) do
         Map.get(model, (unquote(opts)[:field] || unquote(name)))
       end
-      defoverridable [{name, 2}]
+      defoverridable [{name, 2}, {name, 1}]
     end
   end
 
@@ -112,10 +114,11 @@ defmodule Relax.Serializer do
     quote bind_quoted: [name: name, opts: opts] do
       @relations [{:has_one, name, opts} | @relations]
       # Define default relation function, make overridable
-      def unquote(name)(model, _conn) do
+      def unquote(name)(m, c), do: apply(__MODULE__, unquote(name), [m])
+      def unquote(name)(model) do
         Map.get(model, (unquote(opts)[:field] || unquote(name)))
       end
-      defoverridable [{name, 2}]
+      defoverridable [{name, 2}, {name, 1}]
     end
   end
 
