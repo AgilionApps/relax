@@ -2,8 +2,6 @@ defmodule Relax.ConvertKeys do
   @moduledoc """
   Recursively converts keys in nested data structures
   """
-  require Inflex
-
   def camelize(data),   do: convert_keys(data, :camelize_key)
   def underscore(data), do: convert_keys(data, :underscore_key)
 
