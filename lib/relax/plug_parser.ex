@@ -1,5 +1,5 @@
 defmodule Relax.PlugParser do
-  @behaviour Plug.Parser
+  @behaviour Plug.Parsers
   alias Plug.Conn
 
   def parse(conn, "application", "vnd.api+json", _headers, opts) do
