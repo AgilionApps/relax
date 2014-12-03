@@ -1,7 +1,7 @@
 defmodule Relax.Serializer.Location do
   defmodule RootUrlMustBeSet do
     defexception message: """
-      To use url relationships you must set the application :relax, :root_url.
+      To use url relationships or resource location headers you must set the application :relax, :root_url.
 
       Try adding the following to your config/config.exs file:
 
@@ -10,9 +10,22 @@ defmodule Relax.Serializer.Location do
     """
   end
 
+  defmodule PathMustBeSet do
+    defexception message: """
+
+      Creating and updating resources require a location header to be returned.
+
+      Please use the path macro in your serializer:
+
+          path "/v1/posts/:id"
+    """
+  end
+
   defmacro path(path) do
     quote do: @location unquote(path)
   end
+
+  def generate(_m, _s, _c, nil), do: raise PathMustBeSet
 
   def generate(model, serializer, conn, path) do
     case Application.fetch_env(:relax, :root_url) do

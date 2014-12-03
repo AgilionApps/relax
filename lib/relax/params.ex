@@ -28,7 +28,9 @@ defmodule Relax.Params do
 
   defp get_nested_value(val, []), do: val
 
-  defp get_nested_value(map, [h | t]) do
+  defp get_nested_value(%{} = map, [h | t]) do
     get_nested_value(Map.get(map, h), t)
   end
+
+  defp get_nested_value(_not_map, _list), do: nil
 end
