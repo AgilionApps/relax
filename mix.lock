@@ -1,4 +1,4 @@
-%{"blacksmith": {:git, "git://github.com/batate/blacksmith.git", "aa7624b40ed701074a59e564cbcc8a3ba8438036", []},
+%{"blacksmith": {:git, "git://github.com/batate/blacksmith.git", "952dc8bdbf9e9c7c76386be8e0994f514977d748", []},
   "cowboy": {:hex, :cowboy, "1.0.0"},
   "cowlib": {:hex, :cowlib, "1.0.0"},
   "faker": {:hex, :faker, "0.4.0"},
