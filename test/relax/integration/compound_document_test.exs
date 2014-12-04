@@ -67,6 +67,9 @@ defmodule Relax.Integration.CompoundDocumentTest do
     assert [p1, _p2] = json["posts"]
     assert is_integer p1["id"]
     assert is_binary  p1["title"]
+    assert [c1id, c2id] = p1["links"]["comments"]
+    assert is_integer c1id
+    assert is_integer c2id
 
     assert [c1, _c2, _c3, _c4] = json["linked"]["comments"]
     assert is_integer c1["id"]

@@ -15,13 +15,13 @@ defmodule Relax.Serializer.Relationships do
   end
 
   # Returns nested ids, assuming either ids, or models if opts serializer
-  # This should probably handle whatever it is returned better, or enforce 
+  # This should probably handle whatever it is returned better, or enforce
   # return types with a spec.
   defp nested_ids(serializer, model, conn, {_type, name, opts}) do
     case {opts[:serializer], apply(serializer, name, [model, conn])} do
-      {true, [model]} -> Map.get(model, :id)
-      {true, models}  -> Enum.map models, &(Map.get(&1, :id))
-      {_, id_or_ids}  -> id_or_ids
+      {nil, id_or_ids}          -> id_or_ids
+      {_srl, m} when is_list(m) -> Enum.map m, &(Map.get(&1, :id))
+      {_srl, m} when is_map(m)  -> Map.get(m, :id)
     end
   end
 
