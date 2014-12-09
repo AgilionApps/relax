@@ -4,6 +4,23 @@ A [jsonapi.org](http://jsonapi.org) serializer and optional server implementatio
 
 Relax can be used as a standalone API with a router and resources, or integrated into Phoenix.
 
+## TLDR;
+
+[ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers) inspired DSL for json serialization.
+
+```elixir
+
+defmodule PostSerializer do
+  use Relax.Serializer
+  
+  serialize "posts" do
+    attributes [:id, :title, :body]
+    has_many :comments, href: "/v1/posts/:id/comments"
+  end
+end
+```
+
+
 ## Standalone Example
 
 ```elixir
