@@ -18,6 +18,8 @@ defmodule PostSerializer do
     has_many :comments, href: "/v1/posts/:id/comments"
   end
 end
+
+Post.all |> PostSerializer.as_json(conn) |> JSON.encode!
 ```
 
 
