@@ -1,35 +1,127 @@
 # Relax
 
-A [jsonapi.org](http://jsonapi.org) server implimentation in Elixir.
+A [jsonapi.org](http://jsonapi.org) serializer and optional server implementation in Elixir.
 
-## Rationale
+Relax can be used as a standalone API with a router and resources, or integrated into Phoenix.
 
-### Adoption
+## Standalone Example
 
-To drive Elixir adoption at my work place by making the simple use case of building Restful jsonapi.org servers painless and easy. After it is already in the door the more challenging problems will get tackled.
+```elixir
 
-### Simplicity
+defmodule MyApp do
+  # Our Router is just a plug router and we can start it as such.
+  def start, do: Plug.Adapters.Cowboy.http MyApp.Router, []
 
-Powerful, full featured frameworks like Pheonix provide tons of functionality and value, but simple APIs call for simple tools.
+  # Our router is our main entry point for all requests.
+  # Relax.Router is just a DSL on top of Plug.Router, so the standard plug 
+  # stack still works and is used.
+  defmodule Router do
+    use Relax.Router
 
-### Standard
+    plug :match
+    plug :dispatch
 
-JSON APIs are notoriously inconsistent. By adopting the [jsonapi.org](http://jsonapi.org) spec much bikeshedding can be avoided and APIs can be built to spec.
+    version :v1 do
+
+      # Dispatch all /v1/posts/* requests to MyApp.API.Posts plug.
+      resource :posts, MyApp.API.Posts
+    end
+  end
+
+  # Our "Resource" similar to a controller, is just different DSL on a Plug.Router.
+  # By including Relax.Resource we define matches for GET /:id, GET /:comma,:seperated,:ids, GET /, POST /, PUT(or PATCH) /:id, DELETE /:id.
+  # Each match is then dispatched to the proper callback.
+
+  defmodule API.Posts do
+    # Don't match put or delete (:update or :delete)
+    use Relax.Resource, only: [:find_all, :find_many, :find_one, :create]
+
+    # Every resource is expected to define a serializer. This will be used by each request.
+    serializer MyApp.Serializer.Post
+
+    plug :match
+    plug :dispatch
+
+    # Call back for GET / - returns 200 with all posts serialized
+    def find_all(conn), do: okay(conn, MyApp.Post.all)
+
+    # Call back for GET /:id1,:id2,...,:idn - returns 200 with posts serialized
+    def find_many(conn, ids), do: okay(conn, MyApp.Post.find_by_ids(ids))
+
+    # Call back for GET /:id1 returns 200 with posts serialized or 404
+    def find_one(conn, id) do
+      case MyApp.Post.find(id) do
+        nil  -> not_found(conn)
+        post -> okay(conn, post)
+      end
+    end
+  end
+
+  # Defines how we serialize a Post.
+  # Serializer assumes each model is a Map.
+  defmodule Serializer.Post do
+    use Relax.Serializer
+
+    serialize "posts" do
+      attributes [:id, :title, :body]
+
+      # include comments in our response as a compound document.
+      has_many :comments, serializer: Serializer.Comment
+    end
+
+    # Relax.Serializer is not DB specific, so each relationship must be defined.
+    def comments(post), do: post.comments.all
+  end
+
+  defmodule Serializer.Comment do
+    serialize "comments" do
+      attributes [:id, :body, :troll_name]
+
+      # In this serializer the relationship is just a field on the map, no need for a function.
+      has_one :post, field: :post_id
+    end
+  end
+end
+
+```
+
+## Phoenix Example
+
+TODO: Better Phoenix support, this is currently untested.
+
+```elixir
+
+defmodule MyApp do
+
+  defmodule PostController do
+    use Phoenix.Controller
+
+    plug :action
+
+    def index(conn, _params) do
+      posts = MyApp.Post.all
+              |> MyApp.Serializer.Post.as_json(conn, %{})
+              |> JSON.encode!
+      json conn, posts
+    end
+
+  end
+end
+
+```
+
 
 ## Installation
 
-hex etc
+Currently pre-alpha software, use at your own risk via github.
+
+```elixir
+{:relax, github: 'AgilionApps/relax'}
+```
 
 ## Usage
 
-Relax is composed of 4 distinct layers of functionaliy, each of which builds upon the last, yet allows flexiability to integrate with the tools you already in use.
-
-1. The serialization layer - Combine a struct and a conn to generate JsonAPI.org format.
-2. Rendering helpers - Handle calling the serializers and returning the proper response.
-3. Deserialization helpers - Take a JsonAPI.org POST/PUT/PATCH request, deserialize it, and provide params.
-4. Routing layer - Handle the specified JsonAPI.org url structures. eg: /v1/comments/1 vs /v1/comments/1,2,3
-
-### Basic Serialization
+### Relax.Serializer
 
 It should be possible to integrate Relax into any existing applications/frameworks just using the serialization layer.
 
@@ -45,7 +137,7 @@ defmodel MyApp.Models.Comment do
 end
 ```
 
-You can use a seperate DSL to define the json representation. Each serializer the presentation data structure based on the model and connection.
+You can use a separate DSL to define the json representation. Each serializer returns a map based on the given model and connection.
 
 ```elixir
 defmodule MyApp.Serializers.V1.Post do
@@ -79,61 +171,9 @@ conn
   |> send_resp(200, json)
 ```
 
-### Response helpers
+### Relax.Router
 
-These helpers lets you quickly abstract calling serializers and sending responses.
-
-
-```elixir
-# Simple plug example
-defmodule MyApp.API.V1.Posts do
-  use Plug.Router
-  use Relax.Responders
-
-  serializer MyApp.Serializers.V1.Post
-
-  plug :match
-  plug :dispatch
-
-  get "/posts" do
-    okay(conn, %MyApp.Models.Post{id: 1, title: "Foo"})
-  end
-end
-```
-
-### Params helpers
-
-This layer is all about creating and updating your resources. It includes a plug parser to handle the JsonAPI.org content type, and an interface for filtering and transforming the request to the map you need.
-
-```elixir
-# Simple plug example
-defmodule MyApp.API.V1.Posts do
-  use Plug.Router
-  use Relax.Responders
-  use Relax.Params
-
-  serializer MyApp.Serializers.V1.Post
-
-  plug Plug.Parsers, parsers: [Relax.PlugParser]
-  plug :match
-  plug :dispatch
-
-  post "/posts" do
-    filter_params(conn, {"posts", [:title, :body]}) do
-      case MyApp.Models.Post.create(params) do
-        {:ok,    post}   -> created(conn, post)
-        {:error, errors} -> invalid(conn, errors)
-      end
-    end
-  end
-end
-```
-
-### Relax Routing
-
-This is the final layer, and wraps those above. It provides a Router and a Resource.
-
-A Router is a thin layer on top of the existing Plug.Router implementation. It provides version and resource macros to let you quickly define resources.
+The Relax.Router is a thin layer on top of the existing Plug.Router implementation. It provides version and resource macros to let you quickly define resources.
 
 You can still use `Plug.Route.forward/2` and `Plug.Route.match/2` as well as hook into the plug stack normally.
 
@@ -159,9 +199,13 @@ defmodule MyApp.Router do
 end
 ```
 
-A Relax.Resource includes all our response and params helpers in a tidy api.
+### Relax.Resource
 
-A Relax.Resource expects some or all of `find_all/1', `find_many/2`, `find_one/2`, `create/1`, `update/2`, and `delete/2` to be defined. Adding the `:only` or `:except` options to the use Relax.Resource will limit which matches are defined.
+Relax.Resource wraps macros routing to proper actions, serializing and sending responses, and filtering params.
+
+A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_many/2`, `find_one/2`, `create/1`, `update/2`, and `delete/2`. 
+
+In your resource you can choose to only support a subset of these using `:only` or `:except`.
 
 Once again, normal Plug.Route plug stack, functions, and matching work, however they will be defined after the pre-generated resource matches.
 
@@ -190,17 +234,25 @@ defmodule API.V1.Posts do
     okay(conn, Post.find(list_of_ids))
   end
 
+  def create(conn) do
+    filter_params(conn, {"posts", [:title, :body]}) do
+      case MyApp.Models.Post.create(params) do
+        {:ok,    post}   -> created(conn, post)
+        {:error, errors} -> invalid(conn, errors)
+      end
+    end
+  end
+
+  post '/:id/publish' do
+    #...
+    okay(conn, post)
+  end
+
   def match(_), do: not_found(conn)
 end
 
 ```
 
-## Credits
-
-The design of Plug, Phoenix, and Ecto all influenced this library.
-
-Additionally, the serialization DSL is influenced heavily by ActiveModel::Serializers.
-
 ## License
 
-TODO: release & license.
+TODO: release & license. (Apache 2)
