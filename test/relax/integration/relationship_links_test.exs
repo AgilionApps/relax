@@ -3,10 +3,19 @@ defmodule Relax.Integration.RelationshipLinksTest do
   use Plug.Test
 
   defmodule Store do
+    @authors Forge.author_list(1)
     @posts Forge.post_list(2)
     @comments Enum.flat_map(@posts, &(Forge.comment_list(2, post_id: &1.id)))
+    def authors,  do: @authors
     def posts,    do: @posts
     def comments, do: @comments
+  end
+
+  defmodule AuthorSerializer do
+    use Relax.Serializer
+    serialize "authors" do
+      attributes [:id, :name, :email]
+    end
   end
 
   defmodule PostSerializer do
@@ -24,6 +33,21 @@ defmodule Relax.Integration.RelationshipLinksTest do
     serialize "comments" do
       attributes [:id, :body]
       has_one    :post, link: "/v1/posts/:post", field: :post_id
+    end
+  end
+
+  defmodule AuthorsResource do
+    use Relax.Resource, only: [:find_one]
+    plug :match
+    plug :dispatch
+
+    serializer AuthorSerializer
+
+    def find_one(conn, id) do
+      case Enum.find Store.authors, &(&1.id == String.to_integer(id)) do
+        nil     -> not_found(conn)
+        authors -> okay(conn, authors)
+      end
     end
   end
 
@@ -61,10 +85,24 @@ defmodule Relax.Integration.RelationshipLinksTest do
     plug :dispatch
 
     version :v1 do
+      resource :authors, AuthorsResource
       resource :posts, PostsResource do
         resource :comments, PostCommentsResource
       end
     end
+  end
+
+  test "GET /v1/authors/:id" do
+    [author | _] = Store.authors
+
+    conn = conn("GET", "/v1/authors/#{author.id}", nil, [])
+    response = Router.call(conn, [])
+    assert 200 = response.status
+    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert {:ok, json} = Poison.decode(response.resp_body)
+
+    steve = json["authors"]
+    refute Map.has_key?(steve, "links")
   end
 
   test "GET /v1/posts/:id" do
