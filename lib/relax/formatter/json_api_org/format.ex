@@ -37,8 +37,10 @@ defmodule Relax.Formatter.JsonApiOrg.Format do
   # Get attributes and add nested relationships as needed.
   def format_resource(serializer, model, conn) when is_map(model) do
     atts =      Attributes.get(serializer, model, conn)
-    relations = Relationships.nested(serializer, model, conn)
-    Map.put(atts, :links, relations)
+    case Relationships.nested(serializer, model, conn) do
+      relations when map_size(relations) === 0 -> atts
+      relations                                -> Map.put(atts, :links, relations)
+    end
   end
 
   # Adds meta key with meta data if present.
