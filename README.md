@@ -276,4 +276,4 @@ end
 
 ## License
 
-TODO: release & license. (Apache 2)
+Relax source code is released under Apache 2 License. Check LICENSE file for more information.
