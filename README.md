@@ -25,6 +25,8 @@ Post.all |> PostSerializer.as_json(conn) |> JSON.encode!
 
 ## Standalone Example
 
+Simple Plug based DSLs for routing/dispatching API requests.
+
 ```elixir
 
 defmodule MyApp do
@@ -132,10 +134,10 @@ end
 
 ## Installation
 
-Currently pre-alpha software, use at your own risk via github.
+Currently a WIP, use at your own risk.
 
 ```elixir
-{:relax, github: 'AgilionApps/relax'}
+{:relax, "~> 0.0.1"}
 ```
 
 ## Usage

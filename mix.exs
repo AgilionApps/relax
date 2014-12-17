@@ -5,12 +5,11 @@ defmodule Relax.Mixfile do
     [app: :relax,
      version: "0.0.1",
      elixir: "~> 1.0.0",
+     package: package,
+     description: description,
      deps: deps]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type `mix help compile.app` for more information
   def application do
     [applications: applications(Mix.env)]
   end
@@ -18,19 +17,28 @@ defmodule Relax.Mixfile do
   defp applications(:test), do: applications(:all) ++ [:blacksmith]
   defp applications(_all),  do: [:logger]
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type `mix help deps` for more examples and options
   defp deps do
     [{:cowboy, "~> 1.0"},
      {:plug,   "~> 0.8"},
      {:inflex, "~> 0.2.5"},
      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test}]
+  end
+
+  defp package do
+    [
+      licenses: ["Apache 2.0"],
+      links: %{
+        "GitHub" => "https://github.com/AgilionApps/relax"
+      }
+    ]
+  end
+
+  defp description do
+    """
+    A jsonapi.org serializer and optional server implementation in Elixir.
+
+    Relax can be used as a standalone API with Relax.Router and Relax.Resources,
+    or integrated into Phoenix using Relax.Serializer.
+    """
   end
 end
