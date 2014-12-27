@@ -28,7 +28,7 @@ defmodule Relax.Integration.CreateResourceTest do
 
     serializer PostSerializer
 
-    @allowed_params {"posts", [:title, :body, {:author_id, "links.author"}]}
+    @allowed_params {:posts, [:title, :body, {:author_id, "links.author"}]}
 
     def create(conn) do
       params = filter_params(conn, @allowed_params)

@@ -13,6 +13,10 @@ defmodule Relax.Params do
     end
   end
 
+  def filter_params(conn, {key, allowed}) when is_atom(key) do
+    filter_params(conn, {Atom.to_string(key), allowed})
+  end
+
   def filter_params(conn, {key, allowed}) do
     Enum.reduce allowed, %{}, &get_filtered_value(&1, &2, conn.params[key])
   end
