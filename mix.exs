@@ -3,7 +3,7 @@ defmodule Relax.Mixfile do
 
   def project do
     [app: :relax,
-     version: "0.0.1",
+     version: "0.0.2",
      elixir: "~> 1.0.0",
      package: package,
      description: description,
@@ -19,7 +19,7 @@ defmodule Relax.Mixfile do
 
   defp deps do
     [{:cowboy, "~> 1.0"},
-     {:plug,   "~> 0.8"},
+     {:plug,   "~> 0.12"},
      {:inflex, "~> 0.2.5"},
      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test}]
   end
