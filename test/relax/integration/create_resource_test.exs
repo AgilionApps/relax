@@ -59,10 +59,10 @@ defmodule Relax.Integration.CreateResourceTest do
       }
     }
 
-    headers = [{"content-type", "application/vnd.api+json"}]
     {:ok, body} = Poison.encode(request, string: true)
-    conn = conn("POST", "/v1/posts/", body, headers: headers)
-    response = Router.call(conn, [])
+    response = conn("POST", "/v1/posts/", body)
+                |> put_req_header("content-type", "application/vnd.api+json")
+                |> Router.call([])
 
     assert 201 = response.status
     assert {:ok, json} = Poison.decode(response.resp_body)
@@ -78,10 +78,10 @@ defmodule Relax.Integration.CreateResourceTest do
       }
     }
 
-    headers = [{"content-type", "application/vnd.api+json"}]
     {:ok, body} = Poison.encode(request, string: true)
-    conn = conn("POST", "/v1/posts/", body, headers: headers)
-    response = Router.call(conn, [])
+    response = conn("POST", "/v1/posts/", body)
+                |> put_req_header("content-type", "application/vnd.api+json")
+                |> Router.call([])
 
     assert 422 = response.status
   end

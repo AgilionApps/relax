@@ -27,7 +27,7 @@ defmodule Relax.Router do
   # Generate match to forward /:vs/:name to Module
   defp root_forward(name, target) do
     quote do
-      defp do_match(_mthd, [@version, unquote(name) | glob]) do
+      defp do_match(_mthd, [@version, unquote(name) | glob], _) do
         fn(conn) ->
           opts = unquote(target).init([])
           Plug.Router.Utils.forward(conn, glob, unquote(target), opts)
@@ -39,7 +39,7 @@ defmodule Relax.Router do
   # Generate match to forward /:vs/:parent_name/:parent_id/:name to Module
   defp nested_forward(name, target) do
     quote do
-      defp do_match(_mthd, [@version, @nested_in, parent_id, unquote(name) | glob]) do
+      defp do_match(_mthd, [@version, @nested_in, parent_id, unquote(name) | glob], _) do
         fn(conn) ->
           opts = unquote(target).init([])
           conn
