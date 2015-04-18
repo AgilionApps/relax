@@ -46,8 +46,7 @@ defmodule Relax.Integration.SerializeIdsTest do
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :match_api
 
     version :v1 do
       resource :posts, PostsResource

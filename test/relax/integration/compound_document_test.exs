@@ -49,8 +49,7 @@ defmodule Relax.Integration.CompoundDocumentTest do
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :match_api
 
     version :v2 do
       resource :posts, PostsResource
