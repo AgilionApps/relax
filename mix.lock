@@ -1,9 +1,9 @@
 %{"blacksmith": {:git, "git://github.com/batate/blacksmith.git", "952dc8bdbf9e9c7c76386be8e0994f514977d748", []},
   "cowboy": {:hex, :cowboy, "1.0.0"},
-  "cowlib": {:hex, :cowlib, "1.0.0"},
+  "cowlib": {:hex, :cowlib, "1.0.1"},
   "faker": {:hex, :faker, "0.4.0"},
   "inflex": {:hex, :inflex, "0.2.9"},
-  "plug": {:hex, :plug, "0.8.4"},
+  "plug": {:hex, :plug, "0.12.0"},
   "poison": {:hex, :poison, "1.1.1"},
   "ranch": {:hex, :ranch, "1.0.0"},
   "shouldi": {:hex, :shouldi, "0.2.1"}}
