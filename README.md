@@ -15,7 +15,7 @@ defmodule PostSerializer do
   
   serialize "posts" do
     attributes [:id, :title, :body]
-    has_many :comments, href: "/v1/posts/:id/comments"
+    has_many :comments, link: "/v1/posts/:id/comments"
   end
 end
 
