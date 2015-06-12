@@ -5,6 +5,11 @@ defmodule Relax.ConvertKeys do
   def camelize(data),   do: convert_keys(data, :camelize_key)
   def underscore(data), do: convert_keys(data, :underscore_key)
 
+  # Don't format keys on structs.
+  defp convert_keys(%{__struct__: _} = map, fun) do
+    map
+  end
+
   defp convert_keys(map, fun) when is_map(map) do
     Enum.reduce map, %{}, fn({k, v}, a) ->
       Map.put(a, apply(__MODULE__, fun, [k]), convert_keys(v, fun))
