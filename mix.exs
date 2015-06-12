@@ -3,7 +3,7 @@ defmodule Relax.Mixfile do
 
   def project do
     [app: :relax,
-     version: "0.0.1",
+     version: "0.0.3",
      elixir: "~> 1.0.0",
      package: package,
      description: description,
