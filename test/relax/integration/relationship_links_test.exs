@@ -12,14 +12,14 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule AuthorSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "authors" do
       attributes [:id, :name, :email]
     end
   end
 
   defmodule PostSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "posts" do
       attributes [:id, :title, :body]
       has_one    :author,   link: "/v1/authors/:author_id"
@@ -29,7 +29,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule CommentSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "comments" do
       attributes [:id, :body]
       has_one    :post, link: "/v1/posts/:post", field: :post_id

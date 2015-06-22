@@ -32,7 +32,6 @@ defmodule Relax.PlugParser do
   defp decode({:ok, body, conn}) do
     decoded = body
       |> Poison.decode!
-      |> Relax.Formatter.JsonApiOrg.parse
     {:ok, decoded, conn}
   end
 end

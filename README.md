@@ -1,26 +1,13 @@
 # Relax
 
-A [jsonapi.org](http://jsonapi.org) serializer and optional server implementation in Elixir.
+An API routing library aimed at building [jsonapi.org](http://jsonapi.org)
+spec servers on top of plug.
 
-Relax can be used as a standalone API with a router and resources, or integrated into Phoenix.
+*WARNING: As of Relax 0.1.0 serialization is handled by a seperate library:
+[JaSerializer](http://github.com/AgilionApps/ja_serializer).*
 
-## TLDR;
-
-[ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers) inspired DSL for json serialization.
-
-```elixir
-
-defmodule PostSerializer do
-  use Relax.Serializer
-  
-  serialize "posts" do
-    attributes [:id, :title, :body]
-    has_many :comments, link: "/v1/posts/:id/comments"
-  end
-end
-
-Post.all |> PostSerializer.as_json(conn) |> JSON.encode!
-```
+Relax APIs are composed a Router and Resources. Both Routers and Resources
+are simple DSLs on top of standard Plugs.
 
 
 ## Standalone Example
@@ -34,7 +21,7 @@ defmodule MyApp do
   def start, do: Plug.Adapters.Cowboy.http MyApp.Router, []
 
   # Our router is our main entry point for all requests.
-  # Relax.Router is just a DSL on top of Plug.Router, so the standard plug 
+  # Relax.Router is just a DSL on top of Plug.Router, so the standard plug
   # stack still works and is used.
   defmodule Router do
     use Relax.Router
@@ -50,14 +37,22 @@ defmodule MyApp do
   end
 
   # Our "Resource" similar to a controller, is just different DSL on a Plug.Router.
-  # By including Relax.Resource we define matches for GET /:id, GET /:comma,:seperated,:ids, GET /, POST /, PUT(or PATCH) /:id, DELETE /:id.
+  # By including Relax.Resource we define matches for 
+  # * GET /:id
+  # * GET /:comma,:seperated,:ids
+  # * GET /
+  # * POST /
+  # * PUT(or PATCH) /:id
+  # * DELETE /:id.
   # Each match is then dispatched to the proper callback.
 
   defmodule API.Posts do
     # Don't match put or delete (:update or :delete)
     use Relax.Resource, only: [:find_all, :find_many, :find_one, :create]
 
-    # Every resource is expected to define a serializer. This will be used by each request.
+    # Every resource is expected to define a serializer. 
+    # This will be used by each request. And is expected to be a JaSerializer
+    # serializer
     serializer MyApp.Serializer.Post
 
     plug :match
@@ -78,54 +73,12 @@ defmodule MyApp do
     end
   end
 
-  # Defines how we serialize a Post.
-  # Serializer assumes each model is a Map.
   defmodule Serializer.Post do
-    use Relax.Serializer
+    use JaSerializer
 
     serialize "posts" do
       attributes [:id, :title, :body]
-
-      # include comments in our response as a compound document.
-      has_many :comments, serializer: Serializer.Comment
     end
-
-    # Relax.Serializer is not DB specific, so each relationship must be defined.
-    def comments(post), do: post.comments.all
-  end
-
-  defmodule Serializer.Comment do
-    serialize "comments" do
-      attributes [:id, :body, :troll_name]
-
-      # In this serializer the relationship is just a field on the map, no need for a function.
-      has_one :post, field: :post_id
-    end
-  end
-end
-
-```
-
-## Phoenix Example
-
-TODO: Better Phoenix support, this is currently untested.
-
-```elixir
-
-defmodule MyApp do
-
-  defmodule PostController do
-    use Phoenix.Controller
-
-    plug :action
-
-    def index(conn, _params) do
-      posts = MyApp.Post.all
-              |> MyApp.Serializer.Post.as_json(conn, %{})
-              |> JSON.encode!
-      json conn, posts
-    end
-
   end
 end
 
@@ -134,64 +87,13 @@ end
 
 ## Installation
 
-Currently a WIP, use at your own risk.
+Relax is Alpha software and APIs are still stabalizing, use at your own risk.
 
 ```elixir
-{:relax, "~> 0.0.1"}
+{:relax, "~> 0.1.0"}
 ```
 
 ## Usage
-
-### Relax.Serializer
-
-It should be possible to integrate Relax into any existing applications/frameworks just using the serialization layer.
-
-Given any map data structure:
-
-```elixir
-defmodel MyApp.Models.Post do
-  defstruct id: nil, title: "Foo", body: "Bar", posted_at: nil, comment_ids: []
-end
-
-defmodel MyApp.Models.Comment do
-  defstruct id: nil, post_id: nil, body: "spam"
-end
-```
-
-You can use a separate DSL to define the json representation. Each serializer returns a map based on the given model and connection.
-
-```elixir
-defmodule MyApp.Serializers.V1.Post do
-  use Relax.Serializer
-
-  serialize "posts" do
-    attributes [:id, :title, :body, :is_published]
-    has_many :comments, ids: true
-  end
-
-  def is_published(post, _conn) do
-    post.posted_at != nil
-  end
-
-  def comments(post, _conn) do
-    post.comment_ids
-  end
-end
-```
-
-You can then pass the model to the serializer to get the jsonapi.org formated data structure for conversion to JSON.
-
-```elixir
-# In a standard plug:
-json = %MyApp.Models.Post{id: 1, title: "Foo"}
-  |> MyApp.Serializers.V1.Post.as_json(conn)
-  |> Poison.Encoder.encode([])
-# Don't forget the jsonapi.org content type!
-conn
-  |> put_resp_header("content-type", "application/vnd.api+json")
-  |> send_resp(200, json)
-```
-
 ### Relax.Router
 
 The Relax.Router is a thin layer on top of the existing Plug.Router implementation. It provides version and resource macros to let you quickly define resources.
@@ -224,7 +126,7 @@ end
 
 Relax.Resource wraps macros routing to proper actions, serializing and sending responses, and filtering params.
 
-A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_many/2`, `find_one/2`, `create/1`, `update/2`, and `delete/2`. 
+A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_many/2`, `find_one/2`, `create/1`, `update/2`, and `delete/2`.
 
 In your resource you can choose to only support a subset of these using `:only` or `:except`.
 

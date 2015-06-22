@@ -11,7 +11,7 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
   defmodule PostSerializer do
-    use Relax.Serializer
+    use JaSerializer
 
     serialize "posts" do
       attributes [:id, :title, :body, :is_published]

@@ -73,7 +73,7 @@ defmodule Relax.Responders do
 
   def send_json(conn, status, model, serializer, meta) do
     json = model
-      |> serializer.as_json(conn, meta)
+      |> serializer.format(conn, meta)
       |> Poison.Encoder.encode([])
     conn
       |> Plug.Conn.put_resp_header("content-type", "application/vnd.api+json")

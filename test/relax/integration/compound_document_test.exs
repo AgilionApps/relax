@@ -10,14 +10,14 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule AuthorSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "authors" do
       attributes [:id, :name, :email]
     end
   end
 
   defmodule CommentSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "comments" do
       attributes [:id, :body]
       has_one    :post, link: "/v1/posts/:post", field: :post_id
@@ -25,7 +25,7 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule PostSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "posts" do
       attributes [:id, :title, :body]
       has_one    :author,   serializer: AuthorSerializer
@@ -63,6 +63,8 @@ defmodule Relax.Integration.CompoundDocumentTest do
     assert 200 = response.status
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
+
+    IO.inspect json
 
     assert [p1, _p2] = json["posts"]
     assert is_integer p1["id"]

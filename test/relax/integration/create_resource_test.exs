@@ -12,9 +12,9 @@ defmodule Relax.Integration.CreateResourceTest do
   end
 
   defmodule PostSerializer do
-    use Relax.Serializer
-    path "/v1/posts/:id"
+    use JaSerializer
     serialize "posts" do
+      location "/v1/posts/:id"
       attributes [:id, :title, :body]
       has_one    :author
     end
