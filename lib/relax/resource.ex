@@ -7,7 +7,6 @@ defmodule Relax.Resource do
     quote do
       use Plug.Router
       use Relax.Responders
-      use Relax.Params
 
       plug Plug.Parsers, parsers: [Relax.PlugParser]
       plug Relax.Resource.Nested

@@ -101,8 +101,8 @@ defmodule Relax.Integration.RelationshipLinksTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    steve = json["authors"]
-    refute Map.has_key?(steve, "links")
+    steve = json["data"]
+    refute Map.has_key?(steve, "relationships")
   end
 
   test "GET /v1/posts/:id" do
@@ -114,9 +114,9 @@ defmodule Relax.Integration.RelationshipLinksTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    pj = json["posts"]
-    assert "http://example.com/v1/posts/#{post.id}/comments" == pj["links"]["comments"]["href"]
-    assert "http://example.com/v1/authors/#{post.author.id}" == pj["links"]["author"]["href"]
+    pj = json["data"]
+    assert "/v1/posts/#{post.id}/comments" == pj["relationships"]["comments"]["links"]["related"]
+    assert "/v1/authors/#{post.author.id}" == pj["relationships"]["author"]["links"]["related"]
   end
 
   test "GET /v1/posts/:id/comments" do
@@ -128,9 +128,9 @@ defmodule Relax.Integration.RelationshipLinksTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    assert [c1, _c2] = json["comments"]
-    assert is_integer c1["id"]
-    assert is_binary  c1["body"]
-    assert "http://example.com/v1/posts/#{post.id}" == c1["links"]["post"]["href"]
+    assert [c1, _c2] = json["data"]
+    assert is_binary c1["id"]
+    assert is_binary c1["attributes"]["body"]
+    assert "/v1/posts/#{post.id}" == c1["relationships"]["post"]["links"]["related"]
   end
 end

@@ -37,9 +37,8 @@ defmodule MyApp do
   end
 
   # Our "Resource" similar to a controller, is just different DSL on a Plug.Router.
-  # By including Relax.Resource we define matches for 
+  # By including Relax.Resource we define matches for:
   # * GET /:id
-  # * GET /:comma,:seperated,:ids
   # * GET /
   # * POST /
   # * PUT(or PATCH) /:id
@@ -48,7 +47,7 @@ defmodule MyApp do
 
   defmodule API.Posts do
     # Don't match put or delete (:update or :delete)
-    use Relax.Resource, only: [:find_all, :find_many, :find_one, :create]
+    use Relax.Resource, only: [:find_all, :find_one, :create]
 
     # Every resource is expected to define a serializer. 
     # This will be used by each request. And is expected to be a JaSerializer
@@ -60,9 +59,6 @@ defmodule MyApp do
 
     # Call back for GET / - returns 200 with all posts serialized
     def find_all(conn), do: okay(conn, MyApp.Post.all)
-
-    # Call back for GET /:id1,:id2,...,:idn - returns 200 with posts serialized
-    def find_many(conn, ids), do: okay(conn, MyApp.Post.find_by_ids(ids))
 
     # Call back for GET /:id1 returns 200 with posts serialized or 404
     def find_one(conn, id) do
@@ -124,9 +120,9 @@ end
 
 ### Relax.Resource
 
-Relax.Resource wraps macros routing to proper actions, serializing and sending responses, and filtering params.
+Relax.Resource wraps macros routing to proper actions as well as serializing and sending responses.
 
-A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_many/2`, `find_one/2`, `create/1`, `update/2`, and `delete/2`.
+A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_one/2`, `create/1`, `update/2`, and `delete/2`.
 
 In your resource you can choose to only support a subset of these using `:only` or `:except`.
 
@@ -135,7 +131,7 @@ Once again, normal Plug.Route plug stack, functions, and matching work, however 
 ```elixir
 
 defmodule API.V1.Posts do
-  use Relax.Resource, only: [:find_all, :find_one, :find_many]
+  use Relax.Resource, only: [:find_all, :find_one, :create]
 
   plug :match
   plug :dispatch
@@ -153,16 +149,10 @@ defmodule API.V1.Posts do
     end
   end
 
-  def find_many(conn, list_of_ids) do
-    okay(conn, Post.find(list_of_ids))
-  end
-
   def create(conn) do
-    filter_params(conn, {"posts", [:title, :body]}) do
-      case MyApp.Models.Post.create(params) do
-        {:ok,    post}   -> created(conn, post)
-        {:error, errors} -> invalid(conn, errors)
-      end
+    case MyApp.Models.Post.create(attributes(conn)) do
+      {:ok,    post}   -> created(conn, post)
+      {:error, errors} -> invalid(conn, errors)
     end
   end
 
@@ -172,6 +162,11 @@ defmodule API.V1.Posts do
   end
 
   def match(_), do: not_found(conn)
+
+  defp attributes(%{params: params} = conn) do
+    params["data"]["attributes"]
+    |> Dict.take(["title", "body"])
+  end
 end
 
 ```

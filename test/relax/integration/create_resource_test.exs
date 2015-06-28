@@ -3,9 +3,12 @@ defmodule Relax.Integration.CreateResourceTest do
   use Plug.Test
 
   defmodule Post do
-    def create(%{title: t, body: b, author_id: a} = atts)
-        when is_binary(t) and is_binary(b) and is_integer(a) do
-      {:ok, Dict.put(atts, :id, 1234)}
+    def create(%{"title" => t, "body" => b, "author_id" => a} = atts)
+        when is_binary(t) and is_binary(b) and is_binary(a) do
+      result = atts
+        |> Enum.reduce(%{}, fn({k, v}, a) -> Map.put(a, String.to_atom(k), v) end)
+        |> Dict.put(:id, 1234)
+      {:ok, result}
     end
 
     def create(_atts), do: {:error, %{error: "Invalid attributes"}}
@@ -16,9 +19,8 @@ defmodule Relax.Integration.CreateResourceTest do
     serialize "posts" do
       location "/v1/posts/:id"
       attributes [:id, :title, :body]
-      has_one    :author
+      has_one    :author, field: :author_id, type: "person"
     end
-    def author(post, _conn), do: post.author_id
   end
 
   defmodule PostsResource do
@@ -28,14 +30,17 @@ defmodule Relax.Integration.CreateResourceTest do
 
     serializer PostSerializer
 
-    @allowed_params {:posts, [:title, :body, {:author_id, "links.author"}]}
-
     def create(conn) do
-      params = filter_params(conn, @allowed_params)
-      case Post.create(params) do
+      case Post.create(params(conn)) do
         {:ok,    post}   -> created(conn, post)
         {:error, errors} -> invalid(conn, errors)
       end
+    end
+
+    def params(%{params: params}) do
+      params["data"]["attributes"]
+      |> Dict.take(["title", "body"])
+      |> Dict.put("author_id", params["data"]["relationships"]["author"]["data"]["id"])
     end
   end
 
@@ -51,11 +56,18 @@ defmodule Relax.Integration.CreateResourceTest do
 
   test "POST /v1/posts - valid params" do
     request = %{
-      "posts" => %{
-        "title"   => "foo",
-        "body"    => "bar",
-        "naughty" => "hacker",
-        "links"   => %{ "author" => 42 }
+      "data" => %{
+        "type" => "posts",
+        "attributes" => %{
+          "title"   => "foo",
+          "body"    => "bar",
+          "naughty" => "hacker"
+        },
+        "relationships" => %{
+          "author" => %{
+            "data" => %{"id" => "42", "type" => "person"}
+          }
+        }
       }
     }
 
@@ -66,15 +78,20 @@ defmodule Relax.Integration.CreateResourceTest do
 
     assert 201 = response.status
     assert {:ok, json} = Poison.decode(response.resp_body)
-    assert is_integer json["posts"]["id"]
-    assert "foo" == json["posts"]["title"]
-    assert 42 == json["posts"]["links"]["author"]
+    assert is_binary json["data"]["id"]
+    assert "foo" == json["data"]["attributes"]["title"]
+    assert "42" == json["data"]["relationships"]["author"]["data"]["id"]
+    assert "person" == json["data"]["relationships"]["author"]["data"]["type"]
+    assert "/v1/posts/1234" in get_resp_header(response, "Location")
   end
 
   test "POST /v1/posts - invalid params" do
     request = %{
-      "posts" => %{
-        "body"    => "bar",
+      "data" => %{
+        "type" => "posts",
+        "attributes" => %{
+          "body"    => "bar",
+        }
       }
     }
 

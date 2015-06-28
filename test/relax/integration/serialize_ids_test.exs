@@ -15,8 +15,8 @@ defmodule Relax.Integration.SerializeIdsTest do
 
     serialize "posts" do
       attributes [:id, :title, :body, :is_published]
-      has_one    :author
-      has_many   :comments
+      has_one    :author, type: "people"
+      has_many   :comments, type: "comments"
     end
 
     def author(post),       do: post.author.id
@@ -62,18 +62,22 @@ defmodule Relax.Integration.SerializeIdsTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    assert [p1, _p2] = json["posts"]
-    assert is_integer p1["id"]
-    assert is_binary  p1["title"]
-    assert is_binary  p1["body"]
-    assert is_boolean p1["isPublished"]
+    assert [p1, _p2] = json["data"]
+    assert is_binary  p1["id"]
+    assert p1["type"] == "posts"
+    assert is_binary  p1["attributes"]["title"]
+    assert is_binary  p1["attributes"]["body"]
+    assert is_boolean p1["attributes"]["is-published"]
 
-    assert [cid1, cid2] = p1["links"]["comments"]
-    assert is_integer cid1
-    assert is_integer cid2
+    assert [cid1, cid2] = p1["relationships"]["comments"]["data"]
+    assert is_binary cid1["id"]
+    assert cid1["type"] == "comments"
+    assert is_binary cid2["id"]
+    assert cid2["type"] == "comments"
 
-    author_id = p1["links"]["author"]
-    assert is_integer author_id
+    author = p1["relationships"]["author"]["data"]
+    assert is_binary author["id"]
+    assert author["type"] == "people"
   end
 
   test "GET /v1/posts/:id" do
@@ -85,19 +89,23 @@ defmodule Relax.Integration.SerializeIdsTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    pj = json["posts"]
+    pj = json["data"]
 
-    assert post.id        == pj["id"]
-    assert post.title     == pj["title"]
-    assert post.body      == pj["body"]
-    assert post.published == pj["isPublished"]
+    assert to_string(post.id) == pj["id"]
+    assert "posts"        == pj["type"]
+    assert post.title     == pj["attributes"]["title"]
+    assert post.body      == pj["attributes"]["body"]
+    assert post.published == pj["attributes"]["is-published"]
 
-    assert [cid1, cid2] = pj["links"]["comments"]
-    assert is_integer cid1
-    assert is_integer cid2
+    assert [cid1, cid2] = pj["relationships"]["comments"]["data"]
+    assert is_binary cid1["id"]
+    assert cid1["type"] == "comments"
+    assert is_binary cid2["id"]
+    assert cid2["type"] == "comments"
 
-    author_id = pj["links"]["author"]
-    assert is_integer author_id
+    author = pj["relationships"]["author"]["data"]
+    assert is_binary author["id"]
+    assert author["type"] == "people"
   end
 
   test "GET /v1/posts/:wrong_id" do
