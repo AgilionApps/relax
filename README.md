@@ -10,7 +10,7 @@ Relax APIs are composed a Router and Resources. Both Routers and Resources
 are simple DSLs on top of standard Plugs.
 
 
-## Standalone Example
+## Example
 
 Simple Plug based DSLs for routing/dispatching API requests.
 
@@ -122,7 +122,7 @@ end
 
 Relax.Resource wraps macros routing to proper actions as well as serializing and sending responses.
 
-A Relax.Resource delegates the appropriate path matches to the actions `find_all/1', `find_one/2`, `create/1`, `update/2`, and `delete/2`.
+A Relax.Resource delegates the appropriate path matches to the actions `find_all/1`, `find_one/2`, `create/1`, `update/2`, and `delete/2`.
 
 In your resource you can choose to only support a subset of these using `:only` or `:except`.
 
@@ -156,7 +156,7 @@ defmodule API.V1.Posts do
     end
   end
 
-  post '/:id/publish' do
+  post "/:id/publish" do
     #...
     okay(conn, post)
   end
