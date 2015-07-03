@@ -49,10 +49,7 @@ defmodule Relax.Responders do
 
   defmacro created(conn, model) do
     quote bind_quoted: [conn: conn, model: model] do
-      location = apply(@serializer, :location, [model, conn])
-      conn
-        |> Plug.Conn.put_resp_header("Location", location)
-        |> Relax.Responders.send_json(201, model, @serializer)
+      Relax.Responders.send_json(conn, 201, model, @serializer)
     end
   end
 
@@ -72,11 +69,17 @@ defmodule Relax.Responders do
   end
 
   def send_json(conn, status, model, serializer, meta) do
-    json = model
-      |> serializer.as_json(conn, meta)
-      |> Poison.Encoder.encode([])
+    resp = serializer.format(model, conn, meta)
     conn
+      |> add_location(resp)
       |> Plug.Conn.put_resp_header("content-type", "application/vnd.api+json")
-      |> Plug.Conn.send_resp(status, json)
+      |> Plug.Conn.send_resp(status, Poison.Encoder.encode(resp, []))
+  end
+
+  defp add_location(conn, resp) do
+    case resp[:data][:links]["self"] do
+      nil -> conn
+      uri -> Plug.Conn.put_resp_header(conn, "Location", uri)
+    end
   end
 end

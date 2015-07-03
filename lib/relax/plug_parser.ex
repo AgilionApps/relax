@@ -17,8 +17,8 @@ defmodule Relax.PlugParser do
 
   defp parse(conn, opts) do
     conn
-      |> Conn.read_body(opts)
-      |> decode
+    |> Conn.read_body(opts)
+    |> decode
   end
 
   defp decode({:more, _, conn}) do
@@ -31,8 +31,29 @@ defmodule Relax.PlugParser do
 
   defp decode({:ok, body, conn}) do
     decoded = body
-      |> Poison.decode!
-      |> Relax.Formatter.JsonApiOrg.parse
+              |> Poison.decode!
+              |> underscore
     {:ok, decoded, conn}
+  end
+
+  defp underscore(nil), do: nil
+
+  defp underscore(%{"data" => data} = req) do
+    Map.merge(req, %{
+      "data" => %{
+        "attributes" => underscore(data["attributes"]),
+        "relationships" => underscore(data["relationships"])
+      }
+    })
+  end
+
+  defp underscore(map) when is_map(map) do
+    Enum.reduce map, %{}, fn({k, v}, a) ->
+      Map.put(a, underscore(k), v)
+    end
+  end
+
+  defp underscore(string) when is_binary(string) do
+    String.replace(string, ~r/\-/, "_")
   end
 end

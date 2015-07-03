@@ -10,14 +10,14 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule AuthorSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "authors" do
       attributes [:id, :name, :email]
     end
   end
 
   defmodule CommentSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "comments" do
       attributes [:id, :body]
       has_one    :post, link: "/v1/posts/:post", field: :post_id
@@ -25,11 +25,11 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule PostSerializer do
-    use Relax.Serializer
+    use JaSerializer
     serialize "posts" do
       attributes [:id, :title, :body]
-      has_one    :author,   serializer: AuthorSerializer
-      has_many   :comments, serializer: CommentSerializer
+      has_one    :author,   include: AuthorSerializer
+      has_many   :comments, include: CommentSerializer
     end
     def author(post, _conn), do: post.author
     def comments(post, _conn) do
@@ -64,19 +64,21 @@ defmodule Relax.Integration.CompoundDocumentTest do
     assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
-    assert [p1, _p2] = json["posts"]
-    assert is_integer p1["id"]
-    assert is_binary  p1["title"]
-    assert [c1id, c2id] = p1["links"]["comments"]
-    assert is_integer c1id
-    assert is_integer c2id
+    assert [p1, _p2] = json["data"]
+    assert is_binary p1["id"]
+    assert is_binary p1["attributes"]["title"]
+    assert [c1id, c2id] = p1["relationships"]["comments"]["data"]
+    assert is_binary c1id["id"]
+    assert is_binary c2id["id"]
+    assert c1id["type"] == "comments"
+    assert c2id["type"] == "comments"
 
-    assert [c1, _c2, _c3, _c4] = json["linked"]["comments"]
-    assert is_integer c1["id"]
-    assert is_binary  c1["body"]
+    assert [c1, _c2, _c3, _c4] = Enum.filter(json["included"], &(&1["type"] == "comments"))
+    assert is_binary c1["id"]
+    assert is_binary c1["attributes"]["body"]
 
-    assert [a1, _a2] = json["linked"]["authors"]
-    assert is_integer a1["id"]
-    assert is_binary  a1["email"]
+    assert [a1, _a2] = Enum.filter(json["included"], &(&1["type"] == "authors"))
+    assert is_binary a1["id"]
+    assert is_binary a1["attributes"]["email"]
   end
 end
