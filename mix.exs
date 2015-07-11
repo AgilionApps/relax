@@ -44,5 +44,4 @@ defmodule Relax.Mixfile do
     or integrated into Phoenix using Relax.Serializer.
     """
   end
-
 end
