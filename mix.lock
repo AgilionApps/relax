@@ -1,6 +1,8 @@
 %{"blacksmith": {:git, "git://github.com/batate/blacksmith.git", "952dc8bdbf9e9c7c76386be8e0994f514977d748", []},
   "cowboy": {:hex, :cowboy, "1.0.0"},
   "cowlib": {:hex, :cowlib, "1.0.1"},
+  "earmark": {:hex, :earmark, "0.1.17"},
+  "ex_doc": {:hex, :ex_doc, "0.7.3"},
   "faker": {:hex, :faker, "0.4.0"},
   "inflex": {:hex, :inflex, "0.2.9"},
   "ja_serializer": {:hex, :ja_serializer, "0.0.1"},
