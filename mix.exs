@@ -22,7 +22,9 @@ defmodule Relax.Mixfile do
      {:plug,   "~> 0.8"},
      {:inflex, "~> 0.2.5"},
      {:ja_serializer, "~> 0.0.1"},
-     {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test}]
+     {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.7", only: :dev}]
   end
 
   defp package do
@@ -42,4 +44,5 @@ defmodule Relax.Mixfile do
     or integrated into Phoenix using Relax.Serializer.
     """
   end
+
 end
