@@ -7,8 +7,7 @@ defmodule Relax.EctoResource do
 
   ###
   # TODO:
-  #  * Move as much out of macros and into shared code as possible.
-  #  * Refactor all the things.
+  #  * Determine the future of Ecto.Resource, Ecto.Responders
   #  * Add documentation
   #  * Add delete support
   #  * Consider adding a "records" function
@@ -61,18 +60,27 @@ defmodule Relax.EctoResource do
     quote do
       # If nothing matches, next plug
       def do_resource(conn, _, _), do: conn
+
+      def serializer, do: @serializer
+      def error_serializer, do: @error_serializer
     end
   end
 
   @doc """
   Defines the Module using Ecto.Model to be exposed by this resource.
   """
-  defcallback model() :: Atom
+  defcallback model() :: module
 
   @doc """
   Defines the Module using Ecto.Repo to be queried by this resource.
   """
-  defcallback repo() :: Atom
+  defcallback repo() :: module
+
+  @doc """
+  Defines the module using JaSerializer to format this resource.
+  """
+  defcallback serializer() :: module
+
 
   @doc """
   Filters the JSONAPI attributes and relationships based on keyword list

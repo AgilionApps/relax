@@ -1,40 +1,56 @@
 defmodule Relax.EctoResource.Create do
+  use Behaviour
+
+  @type createable :: Plug.Conn.t | {atom, any} | module | Ecto.Query.t
+  defcallback create(Plug.Conn.t, map) :: createable
+  defcallback create_resource(Plug.Conn.t) :: Plug.Conn.t
+
+  @doc false
   defmacro __using__(opts) do
     quote location: :keep do
+      @behaviour Relax.EctoResource.Create
+
       def do_resource(conn, "POST", []) do
         create_resource(conn)
       end
 
       def create_resource(conn) do
-        attributes = Relax.EctoResource.filter_attributes(conn, unquote(opts))
-        respond_create(conn, create(conn, attributes))
+        conn
+        |> create(Relax.EctoResource.filter_attributes(conn, unquote(opts)))
+        |> Relax.EctoResource.Create.respond(conn, __MODULE__)
       end
 
       defoverridable [create_resource: 1]
-
-      def respond_create(conn, %Ecto.Changeset{} = change) do
-        if change.valid? do
-          halt created(conn, repo.insert!(change))
-        else
-          halt invalid(conn, change.errors)
-        end
-      end
-
-      def respond_create(_conn, %Plug.Conn{} = conn) do
-        conn
-      end
-
-      def respond_create(conn, {:error, errors}) do
-        halt invalid(conn, errors)
-      end
-
-      def respond_create(conn, {:ok, model}) do
-        halt created(conn, model)
-      end
-
-      def respond_create(conn, %{} = model) do
-        halt created(conn, model)
-      end
     end
+  end
+
+  @doc false
+  def respond(%Plug.Conn{} = conn, _old_conn, _resource), do: conn
+  def respond(%Ecto.Changeset{} = change, conn, resource) do
+    if change.valid? do
+      model = resource.repo.insert!(change)
+      conn
+      |> Relax.Responders.send_json(201, model, resource.serializer)
+      |> Plug.Conn.halt
+    else
+      conn
+      |> Relax.Responders.send_json(422, change.errors, resource.error_serializer)
+      |> Plug.Conn.halt
+    end
+  end
+  def respond({:error, errors}, conn, resource) do
+    conn
+    |> Relax.Responders.send_json(422, errors, resource.error_serializer)
+    |> Plug.Conn.halt
+  end
+  def respond({:ok, model}, conn, resource) do
+    conn
+    |> Relax.Responders.send_json(201, model, resource.serializer)
+    |> Plug.Conn.halt
+  end
+  def respond(model, resource, conn) do
+    conn
+    |> Relax.Responders.send_json(201, model, resource.serializer)
+    |> Plug.Conn.halt
   end
 end
