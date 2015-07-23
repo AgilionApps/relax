@@ -2,7 +2,7 @@ defmodule Relax.EctoResource do
   use Behaviour
 
   @moduledoc """
-  A DSL to help build JSONAPI resource endpoints.
+  A behaviour to help build JSONAPI resource endpoints.
   """
 
   ###
@@ -10,7 +10,6 @@ defmodule Relax.EctoResource do
   #  * Determine the future of Ecto.Resource, Ecto.Responders
   #  * Add documentation
   #  * Add delete support
-  #  * Consider adding a "records" function
   #  * Consider adding default implimentation of each action.
   #  * Add /relationship support?
 

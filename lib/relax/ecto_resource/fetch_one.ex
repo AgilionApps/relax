@@ -1,15 +1,14 @@
 defmodule Relax.EctoResource.FetchOne do
   use Behaviour
 
-  @type fetchable :: module | Ecto.Query.t | map
   @type id :: integer | String.t
 
-  defcallback fetch_one(Plug.Conn.t, id) :: Plug.Conn.t | fetchable
+  defcallback fetch_one(Plug.Conn.t, id) :: Plug.Conn.t | map
   defcallback fetch_one_resource(Plug.Conn.t) :: Plug.Conn.t
-  defcallback filter(atom, fetchable, String.t) :: fetchable
 
   defmacro __using__(_opts) do
     quote location: :keep do
+      use Relax.EctoResource.Fetchable
       @behaviour Relax.EctoResource.Create
 
       def do_resource(conn, "GET", [id]) do
@@ -18,12 +17,17 @@ defmodule Relax.EctoResource.FetchOne do
 
       def fetch_one_resource(conn, id) do
         conn
-        |> fetch_one(conn)
-        |> Relax.EctoResource.FetchOne.execute_query(id, __MODULE__)
+        |> fetch_one(id)
         |> Relax.EctoResource.FetchOne.respond(conn, __MODULE__)
       end
 
-      defoverridable [fetch_one_resource: 2]
+      def fetch_one(conn, id) do
+        conn
+        |> fetchable
+        |> Relax.EctoResource.FetchOne.execute_query(id, __MODULE__)
+      end
+
+      defoverridable [fetch_one_resource: 2, fetch_one: 2]
     end
   end
 

@@ -8,8 +8,9 @@ defmodule Relax.EctoResource.FetchAll do
   defcallback filter(atom, fetchable, String.t) :: fetchable
 
   @doc false
-  defmacro __using__(opts) do
+  defmacro __using__(_) do
     quote location: :keep do
+      use Relax.EctoResource.Fetchable
       @behaviour Relax.EctoResource.FetchAll
 
       def do_resource(conn, "GET", []) do
@@ -19,20 +20,21 @@ defmodule Relax.EctoResource.FetchAll do
       def fetch_all_resources(conn) do
         conn
         |> fetch_all
-        |> Relax.EctoResource.FetchAll.filter(conn, unquote(opts)[:filters], __MODULE__)
+        |> Relax.EctoResource.FetchAll.filter(conn, __MODULE__)
         |> Relax.EctoResource.FetchAll.execute_query(__MODULE__)
         |> Relax.EctoResource.FetchAll.respond(conn, __MODULE__)
       end
 
       def filter(_, list, _), do: list
 
-      defoverridable [fetch_all_resources: 1, filter: 3]
+      def fetch_all(conn), do: fetchable(conn)
+
+      defoverridable [fetch_all_resources: 1, filter: 3, fetch_all: 1]
     end
   end
 
   @doc false
-  def filter(results, conn, nil, r), do: filter(results, conn, [], r)
-  def filter(results, conn, allowed, resource) do
+  def filter(results, conn, resource) do
     case conn.query_params["filter"] do
       nil -> results
       %{} = filters ->
