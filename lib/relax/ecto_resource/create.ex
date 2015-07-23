@@ -6,17 +6,22 @@ defmodule Relax.EctoResource.Create do
   defcallback create_resource(Plug.Conn.t) :: Plug.Conn.t
 
   @doc false
-  defmacro __using__(opts) do
+  defmacro __using__(_) do
     quote location: :keep do
       @behaviour Relax.EctoResource.Create
+      @behaviour Relax.EctoResource.PermittedParams
 
       def do_resource(conn, "POST", []) do
         create_resource(conn)
       end
 
       def create_resource(conn) do
+        attrs = Relax.EctoResource.PermittedParams.filter(conn, [
+          attributes: apply(__MODULE__, :permitted_attributes, [:create, conn]),
+          relations: apply(__MODULE__, :permitted_relations, [:create, conn]),
+        ])
         conn
-        |> create(Relax.EctoResource.filter_attributes(conn, unquote(opts)))
+        |> create(attrs)
         |> Relax.EctoResource.Create.respond(conn, __MODULE__)
       end
 

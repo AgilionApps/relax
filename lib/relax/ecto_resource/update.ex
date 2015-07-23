@@ -13,6 +13,7 @@ defmodule Relax.EctoResource.Update do
   defmacro __using__(opts) do
     quote location: :keep do
       @behaviour Relax.EctoResource.Update
+      @behaviour Relax.EctoResource.PermittedParams
 
       def do_resource(conn, "PUT", [id]) do
         update_resource(conn, id)
@@ -27,9 +28,12 @@ defmodule Relax.EctoResource.Update do
         case model do
           %Plug.Conn{} = conn -> conn
           model ->
-            attributes = Relax.EctoResource.filter_attributes(conn, unquote(opts))
+            attrs = Relax.EctoResource.PermittedParams.filter(conn, [
+              attributes: apply(__MODULE__, :permitted_attributes, [:update, conn]),
+              relations: apply(__MODULE__, :permitted_relations, [:update, conn]),
+            ])
             conn
-            |> update(model, attributes)
+            |> update(model, attrs)
             |> Relax.EctoResource.Update.respond(conn, __MODULE__)
         end
       end

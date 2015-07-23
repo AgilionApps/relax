@@ -38,10 +38,8 @@ defmodule Relax.EctoResource.FetchAll do
       %{} = filters ->
         filters
         |> Dict.keys
-        |> Enum.map(&String.to_existing_atom/1)
-        |> Enum.filter(&(&1 in allowed))
         |> Enum.reduce results, fn(k, acc) ->
-          resource.filter(k, acc, filters[Atom.to_string(k)])
+          resource.filter(k, acc, filters[k])
         end
     end
   end
