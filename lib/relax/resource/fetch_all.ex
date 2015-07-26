@@ -1,4 +1,4 @@
-defmodule Relax.EctoResource.FetchAll do
+defmodule Relax.Resource.FetchAll do
   use Behaviour
 
   @type fetchable :: module | Ecto.Query.t | list
@@ -10,8 +10,8 @@ defmodule Relax.EctoResource.FetchAll do
   @doc false
   defmacro __using__(_) do
     quote location: :keep do
-      use Relax.EctoResource.Fetchable
-      @behaviour Relax.EctoResource.FetchAll
+      use Relax.Resource.Fetchable
+      @behaviour Relax.Resource.FetchAll
 
       def do_resource(conn, "GET", []) do
         fetch_all_resources(conn)
@@ -20,9 +20,9 @@ defmodule Relax.EctoResource.FetchAll do
       def fetch_all_resources(conn) do
         conn
         |> fetch_all
-        |> Relax.EctoResource.FetchAll.filter(conn, __MODULE__)
-        |> Relax.EctoResource.FetchAll.execute_query(__MODULE__)
-        |> Relax.EctoResource.FetchAll.respond(conn, __MODULE__)
+        |> Relax.Resource.FetchAll.filter(conn, __MODULE__)
+        |> Relax.Resource.FetchAll.execute_query(__MODULE__)
+        |> Relax.Resource.FetchAll.respond(conn, __MODULE__)
       end
 
       def filter(_, list, _), do: list

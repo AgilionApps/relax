@@ -37,7 +37,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule AuthorsResource do
-    use Relax.EctoResource, only: [:fetch_one], ecto: false
+    use Relax.Resource, only: [:fetch_one], ecto: false
     plug :resource
 
     def serializer, do: AuthorSerializer
@@ -48,7 +48,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule PostsResource do
-    use Relax.EctoResource, only: [:fetch_one], ecto: false
+    use Relax.Resource, only: [:fetch_one], ecto: false
     plug :resource
 
     def serializer, do: PostSerializer
@@ -59,7 +59,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule PostCommentsResource do
-    use Relax.EctoResource, only: [:fetch_all], ecto: false
+    use Relax.Resource, only: [:fetch_all], ecto: false
     plug :resource
 
     def serializer, do: CommentSerializer

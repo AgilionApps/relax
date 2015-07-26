@@ -1,4 +1,4 @@
-defmodule Relax.EctoResource.Fetchable do
+defmodule Relax.Resource.Fetchable do
   use Behaviour
 
   @type fetchable :: module | Ecto.Query.t | list
@@ -7,7 +7,7 @@ defmodule Relax.EctoResource.Fetchable do
   @doc false
   defmacro __using__(_) do
     quote location: :keep do
-      @behaviour Relax.EctoResource.Fetchable
+      @behaviour Relax.Resource.Fetchable
 
       def fetchable(_conn), do: __MODULE__.model
 

@@ -1,4 +1,4 @@
-defmodule Relax.EctoResource.PermittedParams do
+defmodule Relax.Resource.PermittedParams do
   use Behaviour
 
   defcallback permitted_attributes(atom, Plug.Conn.t) :: [atom]

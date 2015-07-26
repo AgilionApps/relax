@@ -28,7 +28,7 @@ defmodule Relax.Integration.CreateResourceTest do
   end
 
   defmodule PostsResource do
-    use Relax.EctoResource, only: [:create], ecto: false
+    use Relax.Resource, only: [:create], ecto: false
     plug :resource
 
     def serializer, do: PostSerializer

@@ -1,4 +1,4 @@
-defmodule Relax.EctoResource.FetchOne do
+defmodule Relax.Resource.FetchOne do
   use Behaviour
 
   @type id :: integer | String.t
@@ -8,8 +8,8 @@ defmodule Relax.EctoResource.FetchOne do
 
   defmacro __using__(_opts) do
     quote location: :keep do
-      use Relax.EctoResource.Fetchable
-      @behaviour Relax.EctoResource.FetchOne
+      use Relax.Resource.Fetchable
+      @behaviour Relax.Resource.FetchOne
 
       def do_resource(conn, "GET", [id]) do
         fetch_one_resource(conn, id)
@@ -18,13 +18,13 @@ defmodule Relax.EctoResource.FetchOne do
       def fetch_one_resource(conn, id) do
         conn
         |> fetch_one(id)
-        |> Relax.EctoResource.FetchOne.respond(conn, __MODULE__)
+        |> Relax.Resource.FetchOne.respond(conn, __MODULE__)
       end
 
       def fetch_one(conn, id) do
         conn
         |> fetchable
-        |> Relax.EctoResource.FetchOne.execute_query(id, __MODULE__)
+        |> Relax.Resource.FetchOne.execute_query(id, __MODULE__)
       end
 
       defoverridable [fetch_one_resource: 2, fetch_one: 2]

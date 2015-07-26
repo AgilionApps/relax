@@ -28,7 +28,7 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
   defmodule PostsResource do
-    use Relax.EctoResource, only: [:fetch_all, :fetch_one], ecto: false
+    use Relax.Resource, only: [:fetch_all, :fetch_one], ecto: false
     plug :resource
 
     def serializer, do: PostSerializer

@@ -38,7 +38,7 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule PostsResource do
-    use Relax.EctoResource, only: [:fetch_all], ecto: false
+    use Relax.Resource, only: [:fetch_all], ecto: false
 
     plug :resource
 
