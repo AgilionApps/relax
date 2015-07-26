@@ -1,5 +1,10 @@
 defmodule Relax.Router do
 
+  @moduledoc """
+  A DSL for defning your route structures.
+  """
+
+  @doc false
   defmacro __using__(opts) do
     plug_module = case opts[:plug] do
       nil      -> Plug.Builder
@@ -21,6 +26,9 @@ defmodule Relax.Router do
     end
   end
 
+  @doc """
+
+  """
   defmacro version(version, do: block) do
     quote do
       @version Atom.to_string(unquote(version))
@@ -30,10 +38,16 @@ defmodule Relax.Router do
     end
   end
 
+  @doc """
+
+  """
   defmacro resource(name, module) do
     forward_resource(name, module)
   end
 
+  @doc """
+
+  """
   defmacro resource(name, module, do: block) do
     forward_resource(name, module, block)
   end

@@ -1,23 +1,14 @@
 # Relax
 
-TODO:
-* Merge Relax.Resource, Relax.EctoResource
-* Add delete support
-* Add documentation/rewrite readme.
-* Improve testing
-* Add change log
-* Consider adding default implimentation of create/update for ecto. Possible?
-* Add /relationship support?
+**A Plug based toolset for building simple [jsonapi.org](http://jsonapi.org)
+spec APIS.**
 
-An API routing library aimed at building [jsonapi.org](http://jsonapi.org)
-spec servers on top of plug.
+Relax is still in an early state of development (pre 1.0), so please check the
+changelog before updating.
 
-*WARNING: As of Relax 0.1.0 serialization is handled by a seperate library:
-[JaSerializer](http://github.com/AgilionApps/ja_serializer).*
-
-Relax APIs are composed a Router and Resources. Both Routers and Resources
-are simple DSLs on top of standard Plugs.
-
+Relax APIs are composed of a Router and Resources for handling requests, and
+complimented by [JaSerializer](http://github.com/AgilionApps/ja_serializer) for
+formatting responses.
 
 ## Example
 
@@ -30,7 +21,7 @@ defmodule MyApp do
   def start, do: Plug.Adapters.Cowboy.http MyApp.Router, []
 
   # Our router is our main entry point for all requests.
-  # Relax.Router is just a DSL on top of Plug.Router, so the standard plug
+  # Relax.Router is just a Plug on top of Plug.Router, so the standard plug
   # stack still works and is used.
   defmodule Router do
     use Relax.Router
@@ -58,7 +49,7 @@ defmodule MyApp do
     # Don't match put or delete (:update or :delete)
     use Relax.Resource, only: [:find_all, :find_one, :create]
 
-    # Every resource is expected to define a serializer. 
+    # Every resource is expected to define a serializer.
     # This will be used by each request. And is expected to be a JaSerializer
     # serializer
     serializer MyApp.Serializer.Post
