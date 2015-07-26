@@ -1,18 +1,18 @@
 defmodule Relax.EctoResource.Update do
   use Behaviour
 
-  @type updateable :: Plug.Conn.t | {atom, any} | module | Ecto.Query.t
-  @type fetchable :: module | Ecto.Query.t | map
+  @type updateable :: map
   @type id :: integer | String.t
 
-  defcallback fetch_one(Plug.Conn.t, id) :: Plug.Conn.t | fetchable
-  defcallback update(Plug.Conn.t, map, map) :: updateable
+  defcallback update(Plug.Conn.t, updateable, map) :: updateable | Plug.Conn.t
   defcallback update_resource(Plug.Conn.t, id) :: Plug.Conn.t
 
   @doc false
-  defmacro __using__(opts) do
+  defmacro __using__(_) do
     quote location: :keep do
       @behaviour Relax.EctoResource.Update
+      @behaviour Relax.EctoResource.FetchOne
+      @behaviour Relax.EctoResource.Fetchable
       @behaviour Relax.EctoResource.PermittedParams
 
       def do_resource(conn, "PUT", [id]) do
@@ -44,12 +44,8 @@ defmodule Relax.EctoResource.Update do
 
   @doc false
   def halt_not_found(%Plug.Conn{} = conn), do: conn
-  def halt_not_found(nil, conn) do
-      conn
-      |> Plug.Conn.send_resp(404, "")
-      |> Plug.Conn.halt
-  end
-  def halt_not_found(model, _conn), do: model
+  def halt_not_found(nil, conn),           do: Relax.Responders.not_found(conn)
+  def halt_not_found(model, _conn),        do: model
 
   @doc false
   def respond(%Plug.Conn{} = conn, _old_conn, _resource), do: conn
@@ -72,14 +68,10 @@ defmodule Relax.EctoResource.Update do
   end
 
   defp updated(conn, model, resource) do
-    conn
-    |> Relax.Responders.send_json(200, model, resource.serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 200, model, resource)
   end
 
   defp invalid(conn, errors, resource) do
-    conn
-    |> Relax.Responders.send_json(422, errors, resource.error_serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 422, errors, resource)
   end
 end

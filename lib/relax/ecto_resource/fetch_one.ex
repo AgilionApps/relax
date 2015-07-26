@@ -4,12 +4,12 @@ defmodule Relax.EctoResource.FetchOne do
   @type id :: integer | String.t
 
   defcallback fetch_one(Plug.Conn.t, id) :: Plug.Conn.t | map
-  defcallback fetch_one_resource(Plug.Conn.t) :: Plug.Conn.t
+  defcallback fetch_one_resource(Plug.Conn.t, id) :: Plug.Conn.t
 
   defmacro __using__(_opts) do
     quote location: :keep do
       use Relax.EctoResource.Fetchable
-      @behaviour Relax.EctoResource.Create
+      @behaviour Relax.EctoResource.FetchOne
 
       def do_resource(conn, "GET", [id]) do
         fetch_one_resource(conn, id)
@@ -35,6 +35,7 @@ defmodule Relax.EctoResource.FetchOne do
   def execute_query(query, id, resource) do
     module = resource.model
     case query do
+      nil               -> nil
       %Ecto.Query{} = q -> resource.repo.get(q, id)
       ^module       = q -> resource.repo.get(q, id)
       other             -> other
@@ -44,13 +45,9 @@ defmodule Relax.EctoResource.FetchOne do
   @doc false
   def respond(%Plug.Conn{} = conn, _old_conn, _resource), do: conn
   def respond(nil, conn, _resource) do
-      conn
-      |> Plug.Conn.send_resp(404, "")
-      |> Plug.Conn.halt
+    Relax.Responders.not_found(conn)
   end
   def respond(model, conn, resource) do
-    conn
-    |> Relax.Responders.send_json(200, model, resource.serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 200, model, resource)
   end
 end

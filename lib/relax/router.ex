@@ -1,9 +1,23 @@
 defmodule Relax.Router do
 
-  defmacro __using__(_) do
-    quote do
+  defmacro __using__(opts) do
+    plug_module = case opts[:plug] do
+      nil      -> Plug.Builder
+      :builder -> Plug.Builder
+      :router  -> Plug.Router
+    end
+
+    quote location: :keep do
+      use unquote(plug_module)
       import Relax.Router
-      use Plug.Router
+
+      def route(conn, _opts) do
+        do_relax_route(conn, conn.path_info)
+      end
+
+      def not_found(conn, opts) do
+        Relax.NotFound.call(conn, Dict.merge(opts, type: :route))
+      end
     end
   end
 
@@ -27,11 +41,9 @@ defmodule Relax.Router do
   # Generate match to forward /:vs/:name to Module
   defp root_forward(name, target) do
     quote do
-      defp do_match(_mthd, [@version, unquote(name) | glob], _) do
-        fn(conn) ->
-          opts = unquote(target).init([])
-          Plug.Router.Utils.forward(conn, glob, unquote(target), opts)
-        end
+      def do_relax_route(conn, [@version, unquote(name) | glob]) do
+        conn = Map.put(conn, :path_info, glob)
+        apply(unquote(target), :call, [conn, []])
       end
     end
   end
@@ -39,14 +51,12 @@ defmodule Relax.Router do
   # Generate match to forward /:vs/:parent_name/:parent_id/:name to Module
   defp nested_forward(name, target) do
     quote do
-      defp do_match(_mthd, [@version, @nested_in, parent_id, unquote(name) | glob], _) do
-        fn(conn) ->
-          opts = unquote(target).init([])
-          conn
-          |> Plug.Conn.put_private(:relax_parent_name, @nested_in)
-          |> Plug.Conn.put_private(:relax_parent_id,   parent_id)
-          |> Plug.Router.Utils.forward(glob, unquote(target), opts)
-        end
+      def do_relax_route(conn, [@version, @nested_in, parent_id, unquote(name) | glob]) do
+        conn = conn
+                |> Plug.Conn.put_private(:relax_parent_name, @nested_in)
+                |> Plug.Conn.put_private(:relax_parent_id,   parent_id)
+                |> Map.put(:path_info, glob)
+        apply(unquote(target), :call, [conn, []])
       end
     end
   end

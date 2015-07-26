@@ -28,26 +28,21 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
   defmodule PostsResource do
-    use Relax.Resource, only: [:find_all, :find_one]
-    plug :match
-    plug :dispatch
+    use Relax.EctoResource, only: [:fetch_all, :fetch_one], ecto: false
+    plug :resource
 
-    serializer PostSerializer
+    def serializer, do: PostSerializer
 
-    def find_all(conn), do: okay(conn, Store.posts)
+    def fetchable(_c), do: Store.posts
 
-    def find_one(conn, id) do
-      case Enum.find Store.posts, &(&1.id == String.to_integer(id)) do
-        nil   -> not_found(conn)
-        posts -> okay(conn, posts)
-      end
+    def fetch_one(_c, id) do
+      Enum.find Store.posts, &(&1.id == String.to_integer(id))
     end
   end
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :route
 
     version :v1 do
       resource :posts, PostsResource

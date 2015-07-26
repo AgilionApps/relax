@@ -1,5 +1,14 @@
 # Relax
 
+TODO:
+* Merge Relax.Resource, Relax.EctoResource
+* Add delete support
+* Add documentation/rewrite readme.
+* Improve testing
+* Add change log
+* Consider adding default implimentation of create/update for ecto. Possible?
+* Add /relationship support?
+
 An API routing library aimed at building [jsonapi.org](http://jsonapi.org)
 spec servers on top of plug.
 

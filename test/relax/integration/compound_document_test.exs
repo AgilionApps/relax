@@ -38,19 +38,18 @@ defmodule Relax.Integration.CompoundDocumentTest do
   end
 
   defmodule PostsResource do
-    use Relax.Resource, only: [:find_all]
-    plug :match
-    plug :dispatch
+    use Relax.EctoResource, only: [:fetch_all], ecto: false
 
-    serializer PostSerializer
+    plug :resource
 
-    def find_all(conn), do: okay(conn, Store.posts)
+    def serializer, do: PostSerializer
+
+    def fetchable(_conn), do: Store.posts
   end
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :route
 
     version :v2 do
       resource :posts, PostsResource

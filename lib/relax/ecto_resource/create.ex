@@ -34,28 +34,18 @@ defmodule Relax.EctoResource.Create do
   def respond(%Ecto.Changeset{} = change, conn, resource) do
     if change.valid? do
       model = resource.repo.insert!(change)
-      conn
-      |> Relax.Responders.send_json(201, model, resource.serializer)
-      |> Plug.Conn.halt
+      Relax.Responders.send_json(conn, 201, model, resource)
     else
-      conn
-      |> Relax.Responders.send_json(422, change.errors, resource.error_serializer)
-      |> Plug.Conn.halt
+      Relax.Responders.send_json(conn, 422, change.errors, resource)
     end
   end
   def respond({:error, errors}, conn, resource) do
-    conn
-    |> Relax.Responders.send_json(422, errors, resource.error_serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 422, errors, resource)
   end
   def respond({:ok, model}, conn, resource) do
-    conn
-    |> Relax.Responders.send_json(201, model, resource.serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 201, model, resource)
   end
-  def respond(model, resource, conn) do
-    conn
-    |> Relax.Responders.send_json(201, model, resource.serializer)
-    |> Plug.Conn.halt
+  def respond(model, conn, resource) do
+    Relax.Responders.send_json(conn, 201, model, resource)
   end
 end

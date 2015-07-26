@@ -37,52 +37,44 @@ defmodule Relax.Integration.RelationshipLinksTest do
   end
 
   defmodule AuthorsResource do
-    use Relax.Resource, only: [:find_one]
-    plug :match
-    plug :dispatch
+    use Relax.EctoResource, only: [:fetch_one], ecto: false
+    plug :resource
 
-    serializer AuthorSerializer
+    def serializer, do: AuthorSerializer
 
-    def find_one(conn, id) do
-      case Enum.find Store.authors, &(&1.id == String.to_integer(id)) do
-        nil     -> not_found(conn)
-        authors -> okay(conn, authors)
-      end
+    def fetch_one(_conn, id) do
+      Enum.find Store.authors, &(&1.id == String.to_integer(id))
     end
   end
 
   defmodule PostsResource do
-    use Relax.Resource, only: [:find_one]
-    plug :match
-    plug :dispatch
+    use Relax.EctoResource, only: [:fetch_one], ecto: false
+    plug :resource
 
-    serializer PostSerializer
+    def serializer, do: PostSerializer
 
-    def find_one(conn, id) do
-      case Enum.find Store.posts, &(&1.id == String.to_integer(id)) do
-        nil   -> not_found(conn)
-        posts -> okay(conn, posts)
-      end
+    def fetch_one(_conn, id) do
+      Enum.find Store.posts, &(&1.id == String.to_integer(id))
     end
   end
 
   defmodule PostCommentsResource do
-    use Relax.Resource, only: [:find_all]
-    plug :match
-    plug :dispatch
+    use Relax.EctoResource, only: [:fetch_all], ecto: false
+    plug :resource
 
-    serializer CommentSerializer
+    def serializer, do: CommentSerializer
 
-    def find_all(conn) do
-      post_id = conn.params["posts"] |> String.to_integer
-      okay conn, Enum.filter(Store.comments, &(&1.post_id == post_id))
+    def fetchable(_conn), do: Store.comments
+
+    def filter("posts", comments, id) do
+      id = String.to_integer(id)
+      Enum.filter(comments, &(&1.post_id == id))
     end
   end
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :route
 
     version :v1 do
       resource :authors, AuthorsResource

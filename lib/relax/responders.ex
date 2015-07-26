@@ -1,83 +1,80 @@
 defmodule Relax.Responders do
+  use Behaviour
+
+  @moduledoc """
+  Convienience methods for generating JSONAPI.org spec Plug.Conn responses.
+  """
+
+  @doc """
+  Defines the module using JaSerializer that will be used to format successfull
+  responses.
+  """
+  defcallback serializer() :: module
 
   defmacro __using__(_) do
     quote do
-      @serializer nil
-      @error_serializer nil
-      import Relax.Responders, only: [
-        serializer: 1, error_serializer: 1,
-        send_json: 3, not_found: 1, okay: 2, okay: 3, created: 2, invalid: 2
-      ]
-    end
-  end
-
-  @doc """
-  Defines the serializer this modules responders will use to serialize json.
-  """
-  defmacro serializer(module) do
-    quote do: @serializer unquote(module)
-  end
-
-  @doc """
-  Defines a serializer to be used by invalid responders
-  """
-  defmacro error_serializer(module) do
-    quote do: @error_serializer unquote(module)
-  end
-
-  defmacro send_json(conn, status, model) do
-    quote bind_quoted: [conn: conn, status: status,  model: model] do
-      Relax.Responders.send_json(conn, status, model, @serializer)
+      @behaviour Relax.Responders
+      import Relax.Responders
     end
   end
 
   defmacro okay(conn, model, meta) do
     quote bind_quoted: [conn: conn, model: model, meta: meta] do
-      Relax.Responders.send_json(conn, 200, model, @serializer, meta)
+      Relax.Responders.send_json(conn, 200, model, __MODULE__, meta)
     end
   end
 
   defmacro okay(conn, model) do
     quote bind_quoted: [conn: conn, model: model] do
-      okay(conn, model, %{})
+      Relax.Responders.send_json(conn, 200, model, __MODULE__,  %{})
     end
   end
 
-  defmacro not_found(conn) do
-    quote do: Plug.Conn.send_resp(unquote(conn), 404, "")
+  def not_found(conn) do
+    send_error(conn, 404, "Not found")
   end
 
   defmacro created(conn, model) do
     quote bind_quoted: [conn: conn, model: model] do
-      Relax.Responders.send_json(conn, 201, model, @serializer)
+      Relax.Responders.send_json(conn, 201, model, __MODULE__)
     end
   end
 
   defmacro invalid(conn, errors) do
     quote bind_quoted: [conn: conn, errors: errors] do
-      Relax.Responders.send_json(conn, 422, errors, @error_serializer)
+      Relax.Responders.send_json(conn, 422, errors, __MODULE__)
     end
   end
 
-  def send_json(conn, status, model, serializer) do
-    send_json(conn, status, model, serializer, nil)
+  def send_json(conn, status, model, module) do
+    send_json(conn, status, model, module, nil)
   end
 
-  def send_json(conn, status, model, serializer, _meta) when is_nil(serializer) do
-    json = Poison.Encoder.encode(model, [])
-    Plug.Conn.send_resp(conn, status, json)
+  def send_json(conn, 422, model, module, meta) do
+    resp = module.error_serializer.format(model, conn, meta)
+    send_formatted(conn, 422, resp)
   end
 
-  def send_json(conn, status, model, serializer, meta) do
-    resp = serializer.format(model, conn, meta)
+  def send_json(conn, status, model, module, meta) do
+    body = module.serializer.format(model, conn, meta)
+    send_formatted(conn, status, body)
+  end
+
+  def send_error(conn, status, title) do
+    body = %{errors: [%{title: title, code: status}]}
+    send_formatted(conn, status, body)
+  end
+
+  defp send_formatted(conn, status, body) do
     conn
-      |> add_location(resp)
+      |> add_location(body)
       |> Plug.Conn.put_resp_header("content-type", "application/vnd.api+json")
-      |> Plug.Conn.send_resp(status, Poison.Encoder.encode(resp, []))
+      |> Plug.Conn.send_resp(status, Poison.Encoder.encode(body, []))
+      |> Plug.Conn.halt
   end
 
-  defp add_location(conn, resp) do
-    case resp[:data][:links]["self"] do
+  defp add_location(conn, body) do
+    case body[:data][:links]["self"] do
       nil -> conn
       uri -> Plug.Conn.put_resp_header(conn, "Location", uri)
     end

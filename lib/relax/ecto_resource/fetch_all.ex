@@ -59,8 +59,6 @@ defmodule Relax.EctoResource.FetchAll do
   @doc false
   def respond(%Plug.Conn{} = c, _oldconn, _resource), do: c
   def respond(models, conn, resource) do
-    conn
-    |> Relax.Responders.send_json(200, models, resource.serializer)
-    |> Plug.Conn.halt
+    Relax.Responders.send_json(conn, 200, models, resource)
   end
 end
