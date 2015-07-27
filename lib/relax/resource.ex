@@ -62,7 +62,7 @@ defmodule Relax.Resource do
       if :fetch_one in allowed, do: use Relax.Resource.FetchOne
       if :create in allowed,    do: use Relax.Resource.Create
       if :update in allowed,    do: use Relax.Resource.Update
-      #if :delete in allowed,    do: use Relax.Resource.Delete
+      if :delete in allowed,    do: use Relax.Resource.Delete
     end
   end
 

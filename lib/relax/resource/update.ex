@@ -21,9 +21,9 @@ defmodule Relax.Resource.Update do
 
       def update_resource(conn, id) do
         model = conn
-        |> fetch_one(id)
-        |> Relax.Resource.FetchOne.execute_query(id, __MODULE__)
-        |> Relax.Resource.Update.halt_not_found(conn)
+                |> fetch_one(id)
+                |> Relax.Resource.FetchOne.execute_query(id, __MODULE__)
+                |> Relax.Resource.Update.halt_not_found(conn)
 
         case model do
           %Plug.Conn{} = conn -> conn
