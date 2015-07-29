@@ -15,9 +15,8 @@ defmodule Relax.Resource.Update do
       @behaviour Relax.Resource.Fetchable
       @behaviour Relax.Resource.PermittedParams
 
-      def do_resource(conn, "PUT", [id]) do
-        update_resource(conn, id)
-      end
+      def do_resource(conn, "PATCH", [id]), do: update_resource(conn, id)
+      def do_resource(conn, "PUT", [id]), do: update_resource(conn, id)
 
       def update_resource(conn, id) do
         model = conn
