@@ -1,7 +1,59 @@
 defmodule Relax.Router do
 
   @moduledoc """
-  A DSL for defning your route structures.
+  A DSL for defining a routing structure to determine what resources handle
+  which requests.
+
+  ## Example:
+
+      defmodule MyApp.Router do
+        use Relax.Router
+
+        plug :route
+        plug :not_found
+
+        version :v1 do
+          resource :posts, MyApp.Resources.V1.Posts do
+            resource :comments, MyApp.Resources.V1.Comments
+          end
+          resource :authors, MyApp.Resources.V1.Authors
+        end
+      end
+
+  This routes as such:
+
+  /v1/posts(.*)              -> MyApp.Resources.V1.Posts
+  /v1/posts/:id/comments(.*) -> MyApp.Resources.V1.Comments
+  /v1/authors(.*)            -> MyApp.Resources.V1.Authors
+
+  ### Provided Plugs
+
+  Relax.Resource provides 2 plug functions, `route` and `not found`.
+
+  * `plug :route` - Required to dispatch requests to the appropriate resource.
+  * `plug :not_found` - Optionally returns a 404 for all unmatched requests.
+
+  ## Plug.Builder vs Plug.Router
+
+  By default `use Relax.Router` will also `use Plug.Builder`, however if
+  you wish to capture non-standard routes you can pass the `plug: :router`
+  option to the use statement and use Plug.Router along side your normal
+  resource routes.
+
+      defmodule MyRouter do
+        use Relax.Router, plug: :router
+
+        plug :route
+        plug :match
+        plug :dispatch
+
+        version :v2 do
+          resource :posts, MyApp.Resources.V1.Posts
+        end
+
+        get "ping", do: send_resp(conn, 200, "pong")
+      end
+
   """
 
   @doc false
@@ -27,7 +79,9 @@ defmodule Relax.Router do
   end
 
   @doc """
+  Define what version the api is.
 
+  This can be any atom but it is expected to be part of the URL.
   """
   defmacro version(version, do: block) do
     quote do
@@ -39,15 +93,16 @@ defmodule Relax.Router do
   end
 
   @doc """
+  Defines each resource.
 
+  Take a path fragment as an atom and module (a resource) to handle the path.
+
+  May be nested one level deep.
   """
   defmacro resource(name, module) do
     forward_resource(name, module)
   end
 
-  @doc """
-
-  """
   defmacro resource(name, module, do: block) do
     forward_resource(name, module, block)
   end
