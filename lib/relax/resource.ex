@@ -2,16 +2,98 @@ defmodule Relax.Resource do
   use Behaviour
 
   @moduledoc """
-  A behaviour to help build JSONAPI resource endpoints.
+  Provides functionality and defines a behaviour to help build jsonapi.org
+  resource endpoints.
+
+  ## Using
+
+  When used, `Relax.Resource` works as an parent module that adds
+  common functionality and behaviours and plugs to your module.
+
+  ### Submodules
+
+  When using the module you can pass either an `only` or a `except` option to
+  determine what "actions" are available on the resource. By default all
+  actions are included.
+
+      use Relax.Resource, except: [:delete]
+
+      use Relax.Resource, only: [:fetch_all, :fetch_one]
+
+  Each included action adds another use statement:
+
+  * `fetch_all` - `use Relax.Resource.FetchAll`
+  * `fetch_one` - `use Relax.Resource.FetchOne`
+  * `create` - `use Relax.Resource.Create`
+  * `update` - `use Relax.Resource.Update`
+  * `delete` - `use Relax.Resource.Delete`
+
+  Please see each action's documentation for usage details.
+
+  ### Provided Plugs
+
+  Relax.Resource provides 2 plug functions, `resource` and `not found`.
+
+  * `plug :resource` - Required to dispatch requests to the appropriate action.
+  * `plug :not_found` - Optionally returns a 404 for all un-halted conns.
+
+  Example:
+
+      plug :resource
+      plug :not_found
+
+  ### Plug.Builder vs Plug.Router
+
+  By default `use Relax.Resource` will also `use Plug.Builder`, however if
+  you wish to capture non-standard routes you can pass the `plug: :router`
+  option to the use statement and use Plug.Router along side your normal
+  resource routes.
+
+      defmodule MyResource do
+        use Relax.Resource, plug: :router
+
+        plug :resource
+        plug :match
+        plug :dispatch
+
+        post ":id/activate" do
+          # Work with conn and id directly
+        end
+      end
+
+
+  ## Behaviour
+
+  This module also defines a behaviour defining the callbacks needed by all
+  action types. The behaviour is added when you use this module.
+
   """
 
   @doc """
-  Defines the Module using Ecto.Model to be exposed by this resource.
+  Defines the model (struct) this resource is exposes.
+
+  This is typically a module using Ecto.Model, but may be any struct. Example:
+
+      def model, do: MyApp.Models.Post
+
   """
   defcallback model() :: module
 
   @doc """
-  Defines the Module using Ecto.Repo to be queried by this resource.
+  Defines the module using Ecto.Repo to be queried by this resource.
+
+  This may be defined in each resource, but by default the `:relax` 
+  application `repo` config value is used.
+
+  Per resource example:
+
+      def repo, do: MyApp.Repo
+
+  Config example (config.exs):
+
+      config :relax,
+        repo: MyApp.Repo
+
   """
   defcallback repo() :: module
 
