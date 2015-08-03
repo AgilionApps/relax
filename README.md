@@ -15,7 +15,7 @@ formatting responses.
 This example exposes the following endpoints:
 
 * GET    /v1/posts/
-* GET    /v1/posts/?filter["title"]=elixir
+* GET    /v1/posts/?filter[title]=elixir
 * GET    /v1/posts/:id
 * POST   /v1/posts
 * PUT    /v1/posts/:id
@@ -48,7 +48,7 @@ defmodule MyApp do
       Ecto.Model.assoc(conn.assigns[:current_user], :posts)
     end
 
-    def filter("tag", queryable, value) do
+    def filter("title", queryable, value) do
       Ecto.Query.where(queryable, [p], ilike(a.title, ^"%#{value}%"))
     end
 
