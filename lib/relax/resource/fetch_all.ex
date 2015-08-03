@@ -10,7 +10,7 @@ defmodule Relax.Resource.FetchAll do
   overrideable implementation.
 
   In addition this module uses `Relax.Resource.Fetchable`, for shared model 
-  lookup logic with Relax.Resource.FindAll.
+  lookup logic with Relax.Resource.FetchOne.
   """
 
   @type fetchable :: module | Ecto.Query.t | list
@@ -44,7 +44,7 @@ defmodule Relax.Resource.FetchAll do
   defcallback fetch_all(Plug.Conn.t) :: Plug.Conn.t | fetchable
 
   @doc """
-  This callback can be used to completely override the fetch_all behaviour.
+  This callback can be used to completely override the fetch_all action.
 
   It accepts a Plug.Conn and must return a Plug.Conn.t
   """

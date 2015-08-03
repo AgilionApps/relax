@@ -1,9 +1,50 @@
 defmodule Relax.Resource.FetchOne do
   use Behaviour
 
+  @moduledoc """
+  Include in your resource to respond to GET /:id.
+
+  Typically brought into your resource via `use Relax.Resource`.
+
+  FetchOne defines two callback behaviours, both of which have a default,
+  overrideable implementation.
+
+  In addition this module uses `Relax.Resource.Fetchable`, for shared model 
+  lookup logic with Relax.Resource.FetchAll.
+  """
+
   @type id :: integer | String.t
 
+  @doc """
+  Find a resource to return.
+
+  This should return a struct to be formatted. Nil responses will trigger 404s.
+
+  Examples:
+
+      # Ecto based on query:
+      def fetch_one(_conn, id), do: MyApp.Repo.get!(MyApp.Models.Post, id)
+
+      # Return model limited to the current_user
+      def fetch_one(conn), do 
+        fetchable(conn)
+        |> MyApp.Repo.get(id)
+      end
+
+  A conn may also be returned:
+
+      def fetch_one(conn), do: halt send_resp(conn, 401, "no post for you")
+
+  The default behaviour leverages `fetchable/1` and attempts to find via Ecto
+  if possible.
+  """
   defcallback fetch_one(Plug.Conn.t, id) :: Plug.Conn.t | map
+
+  @doc """
+  This callback can be used to completely override the fetch_one action.
+
+  It accepts a Plug.Conn and must return a Plug.Conn.t
+  """
   defcallback fetch_one_resource(Plug.Conn.t, id) :: Plug.Conn.t
 
   defmacro __using__(_opts) do
