@@ -83,7 +83,7 @@ end
 Relax is Alpha software and APIs are still stabalizing, use at your own risk.
 
 ```elixir
-{:relax, "~> 0.1.0"}
+{:relax, "~> 0.2.0"}
 ```
 
 ## Usage/Documentation
