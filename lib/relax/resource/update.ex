@@ -44,7 +44,7 @@ defmodule Relax.Resource.Update do
   defcallback update(Plug.Conn.t, updateable, map) :: updateable | Plug.Conn.t
 
   @doc """
-  This callback can be used to completely override the create action.
+  This callback can be used to completely override the update action.
 
   It accepts a Plug.Conn and must return a Plug.Conn.t
   """

@@ -2,12 +2,42 @@ defmodule Relax.Resource.Delete do
   use Behaviour
 
   @moduledoc """
+  Include in your resource to respond to DELETE /:id
 
+  Typically brought into your resource via `use Relax.Resource`.
+
+  Update defines two callback behaviours, one of which (`delete/2`) must be
+  implemented.
+
+  In addition this module includes the behaviours:
+
+  * `Relax.Resource.FetchOne` - to find the model to update.
+  * `Relax.Resource.Fetchable` - to find the model to update.
   """
 
   @type id :: integer | String.t
 
+  @doc """
+  Delete a record.
+
+  Receives the conn and the model as found by `fetch_one/2`.
+
+      def delete(_conn, post) do
+        MyApp.Repo.delete!(post)
+      end
+
+  A conn may also be returned:
+
+      def delete(conn), do: halt send_resp(conn, 401, "nope")
+
+  """
   defcallback delete(Plug.Conn.t, map) :: Plug.Conn.t | {atom, map} | map
+
+  @doc """
+  This callback can be used to completely override the delete action.
+
+  It accepts a Plug.Conn and must return a Plug.Conn.t
+  """
   defcallback delete_resource(Plug.Conn.t, id) :: Plug.Conn.t
 
   @doc false
