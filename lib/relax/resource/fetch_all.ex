@@ -50,7 +50,7 @@ defmodule Relax.Resource.FetchAll do
   """
   defcallback fetch_all_resources(Plug.Conn.t) :: Plug.Conn.t
 
-  @doc """
+  @doc ~S"""
   Defines allowed filters for your resource.
 
   By default filters are ignored unless defined. Filters recieve the filter

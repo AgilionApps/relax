@@ -23,8 +23,9 @@ defmodule Relax.Mixfile do
      {:inflex, "~> 0.2.5"},
      {:ja_serializer, "~> 0.1"},
      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
-     {:ecto, "~> 0.14.3", only: [:dev, :test]}
-   ]
+     {:ecto, "~> 0.14.3", only: [:dev, :test]},
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.7", only: :dev}]
   end
 
   defp package do
