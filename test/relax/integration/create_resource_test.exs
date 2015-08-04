@@ -23,31 +23,28 @@ defmodule Relax.Integration.CreateResourceTest do
     end
   end
 
+  defmodule ErrorSerializer do
+    def format(obj, _conn, nil), do: obj
+  end
+
   defmodule PostsResource do
-    use Relax.Resource, only: [:create]
-    plug :match
-    plug :dispatch
+    use Relax.Resource, only: [:create], ecto: false
+    plug :resource
 
-    serializer PostSerializer
+    def serializer, do: PostSerializer
+    def error_serializer, do: ErrorSerializer
 
-    def create(conn) do
-      case Post.create(params(conn)) do
-        {:ok,    post}   -> created(conn, post)
-        {:error, errors} -> invalid(conn, errors)
-      end
+    def create(_c, attributes) do
+      Post.create(attributes)
     end
 
-    def params(%{params: params}) do
-      params["data"]["attributes"]
-      |> Dict.take(["title", "body"])
-      |> Dict.put("author_id", params["data"]["relationships"]["author"]["data"]["id"])
-    end
+    def permitted_attributes(:create, _conn), do: [:title, :body]
+    def permitted_relations(:create, _conn), do: [:author]
   end
 
   defmodule Router do
     use Relax.Router
-    plug :match
-    plug :dispatch
+    plug :route
 
     version :v1 do
       resource :posts, PostsResource
