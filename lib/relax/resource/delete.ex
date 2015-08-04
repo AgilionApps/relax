@@ -80,7 +80,7 @@ defmodule Relax.Resource.Delete do
   def respond({:error, errors}, conn, resource) do
     Relax.Responders.send_json(conn, 422, errors, resource)
   end
-  def respond(_model, conn, resource) do
+  def respond(_model, conn, _resource) do
     deleted(conn)
   end
 

@@ -56,6 +56,7 @@ defmodule Relax.Integration.CompoundDocumentTest do
     end
   end
 
+  @tag timeout: 10000
   test "GET /v2/posts" do
     conn = conn("GET", "/v2/posts", nil, [])
     response = Router.call(conn, [])
