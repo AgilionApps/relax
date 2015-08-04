@@ -1,8 +1,49 @@
 defmodule Relax.Resource.Create do
   use Behaviour
 
-  @type createable :: Plug.Conn.t | {atom, any} | module | Ecto.Query.t
+  @moduledoc """
+  Include in your resource to respond to POST /.
+
+  Typically brought into your resource via `use Relax.Resource`.
+
+  Create defines two callback behaviours, one of which (`create/2`) must be
+  implemented.
+
+  In addition this module includes the behaviour
+  `Relax.Resource.PermittedParams` which is used to whitelist and format
+  jsonapi.org formatted params for use in structs.
+  """
+
+  @type createable :: Plug.Conn.t | {atom, any} | module | Ecto.Changeset.t
+
+  @doc """
+  Create (or attempt to create) a new record.
+
+  Receives the conn and the whitelisted and formatted params. See
+  Relax.Resource.PermittedParams for more information on whitelisting params.
+
+  This often returns an Ecto.Changeset, which will be saved and formated as is
+  appropriate.
+
+      def create(_conn, attributes) do
+        Models.Post.changeset(%Models.Post{}, attributes)
+      end
+
+  Alternatively a tuple of either `{:ok, model}` or `{:error, errors}` can be
+  returned.
+
+  A conn may also be returned:
+
+      def create(conn), do: halt send_resp(conn, 401, "nope")
+
+  """
   defcallback create(Plug.Conn.t, map) :: createable
+
+  @doc """
+  This callback can be used to completely override the create action.
+
+  It accepts a Plug.Conn and must return a Plug.Conn.t
+  """
   defcallback create_resource(Plug.Conn.t) :: Plug.Conn.t
 
   @doc false

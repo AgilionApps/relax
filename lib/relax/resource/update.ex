@@ -1,10 +1,53 @@
 defmodule Relax.Resource.Update do
   use Behaviour
 
+  @moduledoc """
+  Include in your resource to respond to PUT /:id and PATCH /:id.
+
+  Typically brought into your resource via `use Relax.Resource`.
+
+  Update defines two callback behaviours, one of which (`update/2`) must be
+  implemented.
+
+  In addition this module includes the behaviours
+
+  * `Relax.Resource.FetchOne` - to find the model to update.
+  * `Relax.Resource.Fetchable` - to find the model to update.
+  * `Relax.Resource.PermittiedParams` - to whitelist the attributes for update.
+  """
+
   @type updateable :: map
   @type id :: integer | String.t
 
+  @doc"""
+  Update (or attempt to update) an existing record.
+
+  Receives the conn, the model as found by `fetch_one/2` and the whitelisted
+  and formatted params. See Relax.Resource.PermittedParams for more information
+  on whitelisting params.
+
+  Update often returns an Ecto.Changeset, which will be saved and formated as
+  is appropriate.
+
+      def update(_conn, post, attributes) do
+        Models.Post.changeset(post, attributes)
+      end
+
+  Alternatively a tuple of either `{:ok, model}` or `{:error, errors}` can be
+  returned.
+
+  A conn may also be returned:
+
+      def update(conn), do: halt send_resp(conn, 401, "nope")
+
+  """
   defcallback update(Plug.Conn.t, updateable, map) :: updateable | Plug.Conn.t
+
+  @doc """
+  This callback can be used to completely override the create action.
+
+  It accepts a Plug.Conn and must return a Plug.Conn.t
+  """
   defcallback update_resource(Plug.Conn.t, id) :: Plug.Conn.t
 
   @doc false
