@@ -91,6 +91,34 @@ Relax is Alpha software and APIs are still stabalizing, use at your own risk.
 See [http://hexdocs.pm/relax](http://hexdocs.pm/relax) for detailed usage and
 documentation.
 
+## jsonapi.org Spec Compliance
+
+Please see [JaSerializer](http://github.com/AgilionApps/ja_serializer) for
+data serialization compliance.
+
+Supported features:
+
+* Content Negotiation - [send content type](http://jsonapi.org/format/#content-negotiation-servers)
+* Document Structure - see [JaSerializer](http://github.com/AgilionApps/ja_serializer)
+* Fetching Data - [Fetching Resources](http://jsonapi.org/format/#fetching-resources)
+* Fetching Data - [Filtering](http://jsonapi.org/format/#fetching-filtering)
+* CRUD - [Creating Resources](http://jsonapi.org/format/#crud-creating)
+* CRUD - [Updating Resources](http://jsonapi.org/format/#crud-updating)
+* CRUD - [Deleting Resources](http://jsonapi.org/format/#crud-deleting)
+* Errors - [Partial support](http://jsonapi.org/format/#errors)
+
+Todo features:
+
+* Content Negotiation - [reject media type](http://jsonapi.org/format/#content-negotiation-servers)
+* Fetching Data - [Fetching Relationships](http://jsonapi.org/format/#fetching-relationships)
+* Fetching Data - [Fetching Includes](http://jsonapi.org/format/#fetching-includes) (includes query param not supported)
+* Fetching Data - [Sparse Fieldsets](http://jsonapi.org/format/#fetching-sparse-fieldsets)
+* Fetching Data - [Sorting](http://jsonapi.org/format/#fetching-sorting)
+* Fetching Data - [Pagination](http://jsonapi.org/format/#fetching-pagination)
+* CRUD - [Updating Relationships](http://jsonapi.org/format/#crud-updating-relationships)
+* Query Params - [Not currently enforced](http://jsonapi.org/format/#query-parameters)
+* Errors - [Partial support](http://jsonapi.org/format/#errors)
+
 ## License
 
 Relax source code is released under Apache 2 License. Check LICENSE file for more information.
