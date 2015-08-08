@@ -3,8 +3,8 @@ defmodule Relax.Mixfile do
 
   def project do
     [app: :relax,
-     version: "0.2.0",
-     elixir: "~> 1.0.0",
+     version: "0.2.1",
+     elixir: "~> 1.0",
      package: package,
      description: description,
      deps: deps]
@@ -23,7 +23,7 @@ defmodule Relax.Mixfile do
      {:inflex, "~> 0.2.5"},
      {:ja_serializer, "~> 0.1.1"},
      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
-     {:ecto, "~> 0.14.3", only: [:dev, :test]},
+     {:ecto, "~> 0.14"},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.7", only: :dev}]
   end
