@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.2
+
+* Bugfixes:
+  * Ensure defining one filter does not override default filter behaviour.
+
+## v0.2.1
+
+* Bugfixes:
+  * Fixed ecto dependency when compiling for production.
+
 ## v0.2.0
 
 * *Backwards Incompatable changes*
