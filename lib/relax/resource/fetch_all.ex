@@ -70,7 +70,34 @@ defmodule Relax.Resource.FetchAll do
       end
 
   """
-  defcallback filter(atom, fetchable, String.t) :: fetchable
+  defcallback filter(String.t, fetchable, String.t) :: fetchable
+
+
+  @doc """
+  Defines allowed sort fields for your resource.
+
+  By default sort params are ignored unless defined. Sorts recieve the field,
+  the query or collection returned from `fetch_all/1` and the atom :asc or :desc.
+
+  Examples:
+
+      # Ecto (asc)
+      # /resource/?sort=likes,rating
+      def sort("likes", query, :asc) do
+        Ecto.Query.order_by(query, [t], asc: :likes)
+      end
+      def sort("rating", query, :asc) do
+        Ecto.Query.order_by(query, [t], asc: :rating)
+      end
+
+      # Lists (desc)
+      # /resource/?sort=-name
+      def sort("name", list, :desc) do
+        Enum.sort_by(list, &(&1.name)) |> Enum.reverse
+      end
+
+  """
+  defcallback sort(String.t, fetchable, atom) :: fetchable
 
   @doc false
   defmacro __using__(_) do
@@ -87,6 +114,7 @@ defmodule Relax.Resource.FetchAll do
         conn
         |> fetch_all
         |> Relax.Resource.FetchAll.filter(conn, __MODULE__)
+        |> Relax.Resource.FetchAll.sort(conn, __MODULE__)
         |> Relax.Resource.FetchAll.execute_query(__MODULE__)
         |> Relax.Resource.FetchAll.respond(conn, __MODULE__)
       end
@@ -99,7 +127,8 @@ defmodule Relax.Resource.FetchAll do
 
   defmacro __before_compile__(_) do
     quote do
-      def filter(_, list, _), do: list
+      def filter(_, results, _), do: results
+      def sort(_, results, _), do: results
     end
   end
 
@@ -112,6 +141,23 @@ defmodule Relax.Resource.FetchAll do
         |> Dict.keys
         |> Enum.reduce results, fn(k, acc) ->
           resource.filter(k, acc, filters[k])
+        end
+    end
+  end
+
+  @sort_regex ~r/(-?)(\S*)/
+  @doc false
+  def sort(results, conn, resource) do
+    case conn.query_params["sort"] do
+      nil -> results
+      fields ->
+        fields
+        |> String.split(",")
+        |> Enum.reduce results, fn(field, acc) ->
+          case Regex.run(@sort_regex, field) do
+            [_, "", field] -> resource.sort(field, results, :asc)
+            [_, "-", field] -> resource.sort(field, results, :desc)
+          end
         end
     end
   end
