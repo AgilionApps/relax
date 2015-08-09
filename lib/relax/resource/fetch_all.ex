@@ -77,6 +77,7 @@ defmodule Relax.Resource.FetchAll do
     quote location: :keep do
       use Relax.Resource.Fetchable
       @behaviour Relax.Resource.FetchAll
+      @before_compile Relax.Resource.FetchAll
 
       def do_resource(conn, "GET", []) do
         fetch_all_resources(conn)
@@ -90,11 +91,15 @@ defmodule Relax.Resource.FetchAll do
         |> Relax.Resource.FetchAll.respond(conn, __MODULE__)
       end
 
-      def filter(_, list, _), do: list
-
       def fetch_all(conn), do: fetchable(conn)
 
-      defoverridable [fetch_all_resources: 1, filter: 3, fetch_all: 1]
+      defoverridable [fetch_all_resources: 1, fetch_all: 1]
+    end
+  end
+
+  defmacro __before_compile__(_) do
+    quote do
+      def filter(_, list, _), do: list
     end
   end
 
