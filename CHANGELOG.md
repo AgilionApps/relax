@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0 - Dev
+
+* Features:
+  * Add sort support.
+
 ## v0.2.2
 
 * Bugfixes:

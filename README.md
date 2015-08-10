@@ -106,7 +106,7 @@ data serialization compliance.
   - [ ] [Fetching Relationships](http://jsonapi.org/format/#fetching-relationships)
   - [ ] [Fetching Includes](http://jsonapi.org/format/#fetching-includes) (includes query param not supported)
   - [ ] [Sparse Fieldsets](http://jsonapi.org/format/#fetching-sparse-fieldsets)
-  - [ ] [Sorting](http://jsonapi.org/format/#fetching-sorting)
+  - [x] [Sorting](http://jsonapi.org/format/#fetching-sorting)
   - [ ] [Pagination](http://jsonapi.org/format/#fetching-pagination)
 - [ ] CRUD
   - [x] [Creating Resources](http://jsonapi.org/format/#crud-creating)
