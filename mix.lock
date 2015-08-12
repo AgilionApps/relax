@@ -4,7 +4,7 @@
   "decimal": {:hex, :decimal, "1.1.0"},
   "earmark": {:hex, :earmark, "0.1.17"},
   "ecto": {:hex, :ecto, "0.15.0"},
-  "ex_doc": {:hex, :ex_doc, "0.7.3"},
+  "ex_doc": {:hex, :ex_doc, "0.8.1"},
   "faker": {:hex, :faker, "0.4.0"},
   "inflex": {:hex, :inflex, "0.2.9"},
   "ja_serializer": {:hex, :ja_serializer, "0.1.1"},
