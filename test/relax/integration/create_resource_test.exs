@@ -81,7 +81,7 @@ defmodule Relax.Integration.CreateResourceTest do
     assert "foo" == json["data"]["attributes"]["title"]
     assert "42" == json["data"]["relationships"]["author"]["data"]["id"]
     assert "person" == json["data"]["relationships"]["author"]["data"]["type"]
-    assert "/v1/posts/1234" in get_resp_header(response, "Location")
+    assert "/v1/posts/1234" in get_resp_header(response, "location")
   end
 
   test "POST /v1/posts - invalid params" do

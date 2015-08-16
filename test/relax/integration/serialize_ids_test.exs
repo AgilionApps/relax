@@ -52,7 +52,7 @@ defmodule Relax.Integration.SerializeIdsTest do
   @ct "application/vnd.api+json"
 
   test "GET /v1/posts" do
-    response = conn("GET", "/v1/posts", nil, [])
+    response = conn("GET", "/v1/posts")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 200 = response.status
@@ -80,7 +80,7 @@ defmodule Relax.Integration.SerializeIdsTest do
   test "GET /v1/posts/:id" do
     [post | _] = Store.posts
 
-    response = conn("GET", "/v1/posts/#{post.id}", nil, [])
+    response = conn("GET", "/v1/posts/#{post.id}")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 200 = response.status
@@ -107,7 +107,7 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
   test "GET /v1/posts/:wrong_id" do
-    response = conn("GET", "/v1/posts/9999999999", nil, [])
+    response = conn("GET", "/v1/posts/9999999999")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 404 = response.status

@@ -75,7 +75,7 @@ defmodule Relax.Responders do
   defp add_location(conn, body) do
     case body[:data][:links]["self"] do
       nil -> conn
-      uri -> Plug.Conn.put_resp_header(conn, "Location", uri)
+      uri -> Plug.Conn.put_resp_header(conn, "location", uri)
     end
   end
 end

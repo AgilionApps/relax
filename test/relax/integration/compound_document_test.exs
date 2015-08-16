@@ -57,7 +57,7 @@ defmodule Relax.Integration.CompoundDocumentTest do
 
   @tag timeout: 10000
   test "GET /v2/posts" do
-    response = conn("GET", "/v2/posts", nil, [])
+    response = conn("GET", "/v2/posts")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
 

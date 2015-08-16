@@ -86,7 +86,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   test "GET /v1/authors/:id" do
     [author | _] = Store.authors
 
-    response = conn("GET", "/v1/authors/#{author.id}", nil, [])
+    response = conn("GET", "/v1/authors/#{author.id}")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 200 = response.status
@@ -100,7 +100,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   test "GET /v1/posts/:id" do
     [post | _] = Store.posts
 
-    response = conn("GET", "/v1/posts/#{post.id}", nil, [])
+    response = conn("GET", "/v1/posts/#{post.id}")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 200 = response.status
@@ -115,7 +115,7 @@ defmodule Relax.Integration.RelationshipLinksTest do
   test "GET /v1/posts/:id/comments" do
     [post | _] = Store.posts
 
-    response = conn("GET", "/v1/posts/#{post.id}/comments", nil, [])
+    response = conn("GET", "/v1/posts/#{post.id}/comments")
                 |> put_req_header("accept", @ct)
                 |> Router.call([])
     assert 200 = response.status
