@@ -113,8 +113,9 @@ defmodule Relax.Resource do
       # Use each action behavior as appropriate.
       unquote(Relax.Resource.use_action_behaviours(opts))
 
-      # Fetch and parse JSONAPI params
-      plug Plug.Parsers, parsers: [Relax.PlugParser]
+      plug JaSerializer.ContentTypeNegotiation
+      plug Plug.Parsers, parsers: [:json], json_decoder: Poison
+      plug JaSerializer.Deserializer
       plug Relax.Resource.Nested
 
       # Define plug endpoint that dispatches to each action behavior.

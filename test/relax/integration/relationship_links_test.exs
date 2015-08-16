@@ -13,27 +13,24 @@ defmodule Relax.Integration.RelationshipLinksTest do
 
   defmodule AuthorSerializer do
     use JaSerializer
-    serialize "authors" do
-      attributes [:id, :name, :email]
-    end
+    def type, do: "authors"
+    attributes [:id, :name, :email]
   end
 
   defmodule PostSerializer do
     use JaSerializer
-    serialize "posts" do
-      attributes [:id, :title, :body]
-      has_one    :author,   link: "/v1/authors/:author_id"
-      has_many   :comments, link: "/v1/posts/:id/comments"
-    end
+    def type, do: "posts"
+    attributes [:id, :title, :body]
+    has_one    :author,   link: "/v1/authors/:author_id"
+    has_many   :comments, link: "/v1/posts/:id/comments"
     def author_id(post, _conn), do: post.author.id
   end
 
   defmodule CommentSerializer do
     use JaSerializer
-    serialize "comments" do
-      attributes [:id, :body]
-      has_one    :post, link: "/v1/posts/:post", field: :post_id
-    end
+    def type, do: "comments"
+    attributes [:id, :body]
+    has_one    :post, link: "/v1/posts/:post", field: :post_id
   end
 
   defmodule AuthorsResource do
@@ -84,13 +81,16 @@ defmodule Relax.Integration.RelationshipLinksTest do
     end
   end
 
+  @ct "application/vnd.api+json"
+
   test "GET /v1/authors/:id" do
     [author | _] = Store.authors
 
-    conn = conn("GET", "/v1/authors/#{author.id}", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/authors/#{author.id}", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     steve = json["data"]
@@ -100,10 +100,11 @@ defmodule Relax.Integration.RelationshipLinksTest do
   test "GET /v1/posts/:id" do
     [post | _] = Store.posts
 
-    conn = conn("GET", "/v1/posts/#{post.id}", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/posts/#{post.id}", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     pj = json["data"]
@@ -114,10 +115,11 @@ defmodule Relax.Integration.RelationshipLinksTest do
   test "GET /v1/posts/:id/comments" do
     [post | _] = Store.posts
 
-    conn = conn("GET", "/v1/posts/#{post.id}/comments", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/posts/#{post.id}/comments", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     assert [c1, _c2] = json["data"]

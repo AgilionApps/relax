@@ -16,11 +16,10 @@ defmodule Relax.Integration.CreateResourceTest do
 
   defmodule PostSerializer do
     use JaSerializer
-    serialize "posts" do
-      location "/v1/posts/:id"
-      attributes [:id, :title, :body]
-      has_one    :author, field: :author_id, type: "person"
-    end
+    def type, do: "posts"
+    location "/v1/posts/:id"
+    attributes [:id, :title, :body]
+    has_one    :author, field: :author_id, type: "person"
   end
 
   defmodule ErrorSerializer do
@@ -51,6 +50,8 @@ defmodule Relax.Integration.CreateResourceTest do
     end
   end
 
+  @ct "application/vnd.api+json"
+
   test "POST /v1/posts - valid params" do
     request = %{
       "data" => %{
@@ -70,7 +71,8 @@ defmodule Relax.Integration.CreateResourceTest do
 
     {:ok, body} = Poison.encode(request, string: true)
     response = conn("POST", "/v1/posts/", body)
-                |> put_req_header("content-type", "application/vnd.api+json")
+                |> put_req_header("content-type", @ct)
+                |> put_req_header("accept", @ct)
                 |> Router.call([])
 
     assert 201 = response.status
@@ -94,7 +96,8 @@ defmodule Relax.Integration.CreateResourceTest do
 
     {:ok, body} = Poison.encode(request, string: true)
     response = conn("POST", "/v1/posts/", body)
-                |> put_req_header("content-type", "application/vnd.api+json")
+                |> put_req_header("content-type", @ct)
+                |> put_req_header("accept", @ct)
                 |> Router.call([])
 
     assert 422 = response.status

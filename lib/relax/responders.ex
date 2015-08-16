@@ -68,7 +68,6 @@ defmodule Relax.Responders do
   defp send_formatted(conn, status, body) do
     conn
       |> add_location(body)
-      |> Plug.Conn.put_resp_header("content-type", "application/vnd.api+json")
       |> Plug.Conn.send_resp(status, Poison.Encoder.encode(body, []))
       |> Plug.Conn.halt
   end

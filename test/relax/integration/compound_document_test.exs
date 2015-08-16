@@ -11,26 +11,23 @@ defmodule Relax.Integration.CompoundDocumentTest do
 
   defmodule AuthorSerializer do
     use JaSerializer
-    serialize "authors" do
-      attributes [:id, :name, :email]
-    end
+    def type, do: "authors"
+    attributes [:id, :name, :email]
   end
 
   defmodule CommentSerializer do
     use JaSerializer
-    serialize "comments" do
-      attributes [:id, :body]
-      has_one    :post, link: "/v1/posts/:post", field: :post_id
-    end
+    def type, do: "comments"
+    attributes [:id, :body]
+    has_one    :post, link: "/v1/posts/:post", field: :post_id
   end
 
   defmodule PostSerializer do
     use JaSerializer
-    serialize "posts" do
-      attributes [:id, :title, :body]
-      has_one    :author,   include: AuthorSerializer
-      has_many   :comments, include: CommentSerializer
-    end
+    def type, do: "posts"
+    attributes [:id, :title, :body]
+    has_one    :author,   include: AuthorSerializer
+    has_many   :comments, include: CommentSerializer
     def author(post, _conn), do: post.author
     def comments(post, _conn) do
       Enum.filter(Store.comments, &(&1.post_id == post.id))
@@ -56,12 +53,16 @@ defmodule Relax.Integration.CompoundDocumentTest do
     end
   end
 
+  @ct "application/vnd.api+json"
+
   @tag timeout: 10000
   test "GET /v2/posts" do
-    conn = conn("GET", "/v2/posts", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v2/posts", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
+
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     assert [p1, _p2] = json["data"]

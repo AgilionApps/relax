@@ -13,11 +13,10 @@ defmodule Relax.Integration.SerializeIdsTest do
   defmodule PostSerializer do
     use JaSerializer
 
-    serialize "posts" do
-      attributes [:id, :title, :body, :is_published]
-      has_one    :author, type: "people"
-      has_many   :comments, type: "comments"
-    end
+    def type, do: "posts"
+    attributes [:id, :title, :body, :is_published]
+    has_one    :author, type: "people"
+    has_many   :comments, type: "comments"
 
     def author(post),       do: post.author.id
     def is_published(post), do: post.published
@@ -50,11 +49,14 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
 
+  @ct "application/vnd.api+json"
+
   test "GET /v1/posts" do
-    conn = conn("GET", "/v1/posts", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/posts", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     assert [p1, _p2] = json["data"]
@@ -78,10 +80,11 @@ defmodule Relax.Integration.SerializeIdsTest do
   test "GET /v1/posts/:id" do
     [post | _] = Store.posts
 
-    conn = conn("GET", "/v1/posts/#{post.id}", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/posts/#{post.id}", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 200 = response.status
-    assert ["application/vnd.api+json"] = get_resp_header(response, "content-type")
+    assert [@ct] = get_resp_header(response, "content-type")
     assert {:ok, json} = Poison.decode(response.resp_body)
 
     pj = json["data"]
@@ -104,8 +107,9 @@ defmodule Relax.Integration.SerializeIdsTest do
   end
 
   test "GET /v1/posts/:wrong_id" do
-    conn = conn("GET", "/v1/posts/9999999999", nil, [])
-    response = Router.call(conn, [])
+    response = conn("GET", "/v1/posts/9999999999", nil, [])
+                |> put_req_header("accept", @ct)
+                |> Router.call([])
     assert 404 = response.status
   end
 end
