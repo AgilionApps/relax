@@ -97,8 +97,8 @@ Please see [JaSerializer](http://github.com/AgilionApps/ja_serializer) for
 data serialization compliance.
 
 - [ ] Content Negotiation
-  - [x] [Send content type](http://jsonapi.org/format/#content-negotiation-servers)
-  - [ ] [Reject media type](http://jsonapi.org/format/#content-negotiation-servers)
+  - [x] [Send content type](http://jsonapi.org/format/#content-negotiation)
+  - [ ] [Reject media type](http://jsonapi.org/format/#content-negotiation)
 - [x] Document Structure - see [JaSerializer](http://github.com/AgilionApps/ja_serializer)
 - [ ] Fetching Data
   - [x] [Fetching Resources](http://jsonapi.org/format/#fetching-resources)
