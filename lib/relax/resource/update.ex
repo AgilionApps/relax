@@ -93,8 +93,7 @@ defmodule Relax.Resource.Update do
   def respond(%Plug.Conn{} = conn, _old_conn, _resource), do: conn
   def respond(%Ecto.Changeset{} = change, conn, resource) do
     if change.valid? do
-      model = resource.repo.update!(change)
-      updated(conn, model, resource)
+      change |> resource.repo.update |> respond(conn, resource)
     else
       invalid(conn, change.errors, resource)
     end

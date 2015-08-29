@@ -74,8 +74,7 @@ defmodule Relax.Resource.Create do
   def respond(%Plug.Conn{} = conn, _old_conn, _resource), do: conn
   def respond(%Ecto.Changeset{} = change, conn, resource) do
     if change.valid? do
-      model = resource.repo.insert!(change)
-      Relax.Responders.send_json(conn, 201, model, resource)
+      change |> resource.repo.insert |> respond(conn, resource)
     else
       Relax.Responders.send_json(conn, 422, change.errors, resource)
     end

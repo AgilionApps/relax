@@ -21,7 +21,7 @@ defmodule Relax.Integration.SerializeIdsTest do
     def author(post),       do: post.author.id
     def is_published(post), do: post.published
 
-    def comments(post) do
+    def comments(post, _) do
       Enum.filter_map Store.comments, &(&1.post_id == post.id), &(&1.id)
     end
   end
