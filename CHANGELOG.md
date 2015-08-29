@@ -1,11 +1,12 @@
 # Changelog
 
-## v0.3.0 - Dev
+## v0.3.0
 
 * Features:
   * Add sort support.
-  * Update to JaSerializer 0.2.
+  * Update to JaSerializer 0.3.
   * Update to Plug 1.0.
+  * Update to Ecto 1.0.
 
 ## v0.2.2
 
