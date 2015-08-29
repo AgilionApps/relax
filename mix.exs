@@ -21,9 +21,9 @@ defmodule Relax.Mixfile do
     [{:cowboy, "~> 1.0"},
      {:poison, "~> 1.0"},
      {:plug,   "~> 1.0"},
+     {:ecto, "~> 1.0"},
      {:ja_serializer, "~> 0.3"},
      {:blacksmith, git: "git://github.com/batate/blacksmith.git", only: :test},
-     {:ecto, "~> 1.0"},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.7", only: :dev}]
   end
