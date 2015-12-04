@@ -41,8 +41,8 @@ defmodule Relax.Mixfile do
     """
     A jsonapi.org serializer and optional server implementation in Elixir.
 
-    Relax can be used as a standalone API with Relax.Router and Relax.Resources,
-    or integrated into Phoenix using Relax.Serializer.
+    Relax APIs are composed of a Router and Resources for handling requests, and
+    complimented by JaSerializer for formatting responses.
     """
   end
 end
