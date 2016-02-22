@@ -86,7 +86,7 @@ defmodule Relax.Resource.Delete do
 
   defp deleted(conn) do
     conn
-    |> Plug.Conn.send_resp(200, "")
+    |> Plug.Conn.send_resp(204, "")
     |> Plug.Conn.halt
   end
 end
