@@ -15,6 +15,7 @@ formatting responses.
 This example exposes the following endpoints:
 
 * GET    /v1/posts/
+* GET    /v1/posts/?page=1&size=100
 * GET    /v1/posts/?filter[title]=elixir
 * GET    /v1/posts/:id
 * POST   /v1/posts
