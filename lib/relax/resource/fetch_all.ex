@@ -1,5 +1,6 @@
 defmodule Relax.Resource.FetchAll do
   use Behaviour
+  import Ecto.Query
 
   @moduledoc """
   Include in your resource to respond to GET / and GET /?filter[foo]=bar.
@@ -9,7 +10,7 @@ defmodule Relax.Resource.FetchAll do
   FetchAll defines three callback behaviours, all of which have a default,
   overrideable implementation.
 
-  In addition this module uses `Relax.Resource.Fetchable`, for shared model 
+  In addition this module uses `Relax.Resource.Fetchable`, for shared model
   lookup logic with Relax.Resource.FetchOne.
   """
 
@@ -18,7 +19,7 @@ defmodule Relax.Resource.FetchAll do
   @doc """
   Lookup a collection to return.
 
-  This often returns an Ecto.Query or and Ecto.Model module name that has not 
+  This often returns an Ecto.Query or and Ecto.Model module name that has not
   yet been sent to the repo. Relax will execute the query after filtering and
   format the response appropriately.
 
@@ -115,6 +116,7 @@ defmodule Relax.Resource.FetchAll do
         |> fetch_all
         |> Relax.Resource.FetchAll.filter(conn, __MODULE__)
         |> Relax.Resource.FetchAll.sort(conn, __MODULE__)
+        |> Relax.Resource.FetchAll.paginate(conn, __MODULE__)
         |> Relax.Resource.FetchAll.execute_query(__MODULE__)
         |> Relax.Resource.FetchAll.respond(conn, __MODULE__)
       end
@@ -173,8 +175,39 @@ defmodule Relax.Resource.FetchAll do
   end
 
   @doc false
+  def paginate(%Ecto.Query{}=query, conn, _resource) do
+    {page_number, page_size} = scrub_page(conn)
+    offset = page_size * (page_number - 1)
+    from(p in query,
+      limit: ^page_size,
+      offset: ^offset)
+  end
+  def paginate(query, conn, _resource) do
+      {page_number, page_size} = scrub_page(conn)
+      offset = page_size * (page_number - 1)
+      Enum.slice(query, offset, page_size*page_number)
+  end
+
+  @doc false
   def respond(%Plug.Conn{} = c, _oldconn, _resource), do: c
   def respond(models, conn, resource) do
     Relax.Responders.send_json(conn, 200, models, resource)
+  end
+
+  @doc false
+  defp to_int(i) when is_integer(i), do: i
+  defp to_int(s) when is_binary(s) do
+    case Integer.parse(s) do
+      {i, _} -> i
+      :error -> :error
+    end
+  end
+
+  @doc false
+  defp scrub_page(conn) do
+      params = conn.query_params
+      page_number = params |> Dict.get("page", 1) |> to_int
+      page_size = params |> Dict.get("size", 10) |> to_int
+      {page_number, page_size}
   end
 end

@@ -83,4 +83,12 @@ defmodule Relax.Resource.FetchAllTest do
     json = Poison.decode!(json, keys: :atoms)
     assert [%{created: 3}, %{created: 1}, %{created: 2}] = json
   end
+
+  test "paginate by 1" do
+    conn = Plug.Test.conn("GET", "/?page=1&size=1", [])
+            |> Plug.Conn.fetch_query_params
+    %{resp_body: json} = ArticlesResource.fetch_all_resources(conn)
+    json = Poison.decode!(json, keys: :atoms)
+    assert [%{created: 1, published: true, title: "one"}] = json
+  end
 end
